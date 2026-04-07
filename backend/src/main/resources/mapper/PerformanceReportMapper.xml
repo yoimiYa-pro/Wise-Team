@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.PerformanceReportMapper">
+    <resultMap id="PrMap" type="com.teampm.domain.PerformanceReport">
+        <id property="id" column="id"/>
+        <result property="cycleId" column="cycle_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="score" column="score"/>
+        <result property="detailJson" column="detail_json"/>
+    </resultMap>
+
+    <select id="findByCycleId" resultMap="PrMap">SELECT * FROM performance_reports WHERE cycle_id = #{cycleId}</select>
+    <select id="findByUserId" resultMap="PrMap">
+        SELECT * FROM performance_reports WHERE user_id = #{userId} ORDER BY id DESC LIMIT #{limit}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO performance_reports (cycle_id, user_id, score, detail_json)
+        VALUES (#{cycleId}, #{userId}, #{score}, #{detailJson})
+        ON DUPLICATE KEY UPDATE score = VALUES(score), detail_json = VALUES(detail_json)
+    </insert>
+</mapper>

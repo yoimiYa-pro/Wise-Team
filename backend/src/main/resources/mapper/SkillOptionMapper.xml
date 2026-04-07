@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.SkillOptionMapper">
+    <resultMap id="SkillOptionMap" type="com.teampm.domain.SkillOption">
+        <id property="id" column="id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="skillCode" column="skill_code"/>
+        <result property="label" column="label"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="SkillOptionMap">SELECT * FROM skill_options WHERE id = #{id}</select>
+
+    <select id="findByTeamId" resultMap="SkillOptionMap">
+        SELECT * FROM skill_options WHERE team_id = #{teamId} ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="findAllTeamScoped" resultMap="SkillOptionMap">
+        SELECT * FROM skill_options WHERE team_id &gt; 0 ORDER BY team_id ASC, sort_order ASC, id ASC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO skill_options (team_id, skill_code, label, sort_order)
+        VALUES (#{teamId}, #{skillCode}, #{label}, #{sortOrder})
+    </insert>
+
+    <update id="update">
+        UPDATE skill_options SET
+            skill_code = #{skillCode},
+            label = #{label},
+            sort_order = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">DELETE FROM skill_options WHERE id = #{id}</delete>
+</mapper>

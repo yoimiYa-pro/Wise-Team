@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.TaskStatusRequestMapper">
+    <resultMap id="Map" type="com.teampm.domain.TaskStatusRequest">
+        <id property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="applicantId" column="applicant_id"/>
+        <result property="fromStatus" column="from_status"/>
+        <result property="toStatus" column="to_status"/>
+        <result property="applyReason" column="apply_reason"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="reviewerId" column="reviewer_id"/>
+        <result property="reviewComment" column="review_comment"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="Map">SELECT * FROM task_status_requests WHERE id = #{id}</select>
+
+    <select id="findPendingByTaskId" resultMap="Map">
+        SELECT * FROM task_status_requests
+        WHERE task_id = #{taskId} AND review_status = 'PENDING' LIMIT 1
+    </select>
+
+    <select id="findPendingForAdmin" resultMap="Map">
+        SELECT r.* FROM task_status_requests r
+        WHERE r.review_status = 'PENDING'
+        ORDER BY r.id DESC
+    </select>
+
+    <select id="findPendingForTeamIds" resultMap="Map">
+        SELECT r.* FROM task_status_requests r
+        INNER JOIN tasks t ON t.id = r.task_id
+        WHERE r.review_status = 'PENDING'
+        AND t.team_id IN
+        <foreach collection="teamIds" item="tid" open="(" separator="," close=")">
+            #{tid}
+        </foreach>
+        ORDER BY r.id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task_status_requests (task_id, applicant_id, from_status, to_status, apply_reason, review_status)
+        VALUES (#{taskId}, #{applicantId}, #{fromStatus}, #{toStatus}, #{applyReason}, #{reviewStatus})
+    </insert>
+
+    <update id="updateReview">
+        UPDATE task_status_requests SET
+            review_status = #{reviewStatus},
+            reviewer_id = #{reviewerId},
+            review_comment = #{reviewComment}
+        WHERE id = #{id}
+    </update>
+</mapper>

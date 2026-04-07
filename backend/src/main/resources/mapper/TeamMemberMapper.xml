@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.TeamMemberMapper">
+    <resultMap id="TmMap" type="com.teampm.domain.TeamMember">
+        <id property="id" column="id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="approvalStatus" column="approval_status"/>
+        <result property="joinedAt" column="joined_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="TmMap">SELECT * FROM team_members WHERE id = #{id}</select>
+
+    <select id="findByTeamAndUser" resultMap="TmMap">
+        SELECT * FROM team_members WHERE team_id = #{teamId} AND user_id = #{userId}
+    </select>
+    <select id="findByTeamId" resultMap="TmMap">SELECT * FROM team_members WHERE team_id = #{teamId}</select>
+    <select id="findByUserId" resultMap="TmMap">SELECT * FROM team_members WHERE user_id = #{userId}</select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO team_members (team_id, user_id, approval_status)
+        VALUES (#{teamId}, #{userId}, #{approvalStatus})
+    </insert>
+
+    <update id="updateApproval">
+        UPDATE team_members SET approval_status = #{approvalStatus} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">DELETE FROM team_members WHERE id = #{id}</delete>
+
+    <select id="findApprovedUserIds" resultType="long">
+        SELECT user_id FROM team_members WHERE team_id = #{teamId} AND approval_status = 'APPROVED'
+    </select>
+
+    <select id="countApprovedByTeamId" resultType="int">
+        SELECT COUNT(*) FROM team_members WHERE team_id = #{teamId} AND approval_status = 'APPROVED'
+    </select>
+</mapper>

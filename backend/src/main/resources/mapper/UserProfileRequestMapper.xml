@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.UserProfileRequestMapper">
+    <resultMap id="Map" type="com.teampm.domain.UserProfileRequest">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="proposedDisplayName" column="proposed_display_name"/>
+        <result property="proposedSkillsJson" column="proposed_skills_json"/>
+        <result property="proposedBaseCapacity" column="proposed_base_capacity"/>
+        <result property="applyReason" column="apply_reason"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="reviewerId" column="reviewer_id"/>
+        <result property="reviewComment" column="review_comment"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="Map">SELECT * FROM user_profile_requests WHERE id = #{id}</select>
+
+    <select id="findPendingByUserId" resultMap="Map">
+        SELECT * FROM user_profile_requests
+        WHERE user_id = #{userId} AND review_status = 'PENDING' LIMIT 1
+    </select>
+
+    <select id="findAllPending" resultMap="Map">
+        SELECT * FROM user_profile_requests
+        WHERE review_status = 'PENDING'
+        ORDER BY id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_profile_requests (
+            user_id, proposed_display_name, proposed_skills_json, proposed_base_capacity,
+            apply_reason, review_status
+        ) VALUES (
+            #{userId}, #{proposedDisplayName}, #{proposedSkillsJson}, #{proposedBaseCapacity},
+            #{applyReason}, #{reviewStatus}
+        )
+    </insert>
+
+    <update id="updateReview">
+        UPDATE user_profile_requests SET
+            review_status = #{reviewStatus},
+            reviewer_id = #{reviewerId},
+            review_comment = #{reviewComment}
+        WHERE id = #{id}
+    </update>
+</mapper>

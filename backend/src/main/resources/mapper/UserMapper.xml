@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.UserMapper">
+    <resultMap id="UserMap" type="com.teampm.domain.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="displayName" column="display_name"/>
+        <result property="role" column="role"/>
+        <result property="skillsJson" column="skills_json"/>
+        <result property="baseCapacity" column="base_capacity"/>
+        <result property="avgPerformance" column="avg_performance"/>
+        <result property="delayHistoryScore" column="delay_history_score"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="UserMap">SELECT * FROM users WHERE id = #{id}</select>
+    <select id="findByUsername" resultMap="UserMap">SELECT * FROM users WHERE username = #{username}</select>
+    <select id="findAll" resultMap="UserMap">SELECT * FROM users ORDER BY id</select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password_hash, display_name, role, skills_json, base_capacity, avg_performance, delay_history_score, status)
+        VALUES (#{username}, #{passwordHash}, #{displayName}, #{role}, #{skillsJson}, #{baseCapacity}, #{avgPerformance}, #{delayHistoryScore}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE users SET
+            display_name = #{displayName},
+            role = #{role},
+            skills_json = #{skillsJson},
+            base_capacity = #{baseCapacity},
+            avg_performance = #{avgPerformance},
+            delay_history_score = #{delayHistoryScore},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePerformance">
+        UPDATE users SET avg_performance = #{avgPerformance} WHERE id = #{id}
+    </update>
+
+    <update id="updateDelayHistory">
+        UPDATE users SET delay_history_score = #{score} WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE users SET password_hash = #{passwordHash} WHERE id = #{id}
+    </update>
+</mapper>

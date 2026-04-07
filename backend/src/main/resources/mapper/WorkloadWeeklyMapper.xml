@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.WorkloadWeeklyMapper">
+    <resultMap id="WlMap" type="com.teampm.domain.WorkloadWeekly">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="yearWeek" column="year_week"/>
+        <result property="actualHours" column="actual_hours"/>
+        <result property="forecastHours" column="forecast_hours"/>
+    </resultMap>
+
+    <select id="findByUserAndWeek" resultMap="WlMap">
+        SELECT * FROM workload_weekly WHERE user_id = #{userId} AND year_week = #{yearWeek}
+    </select>
+    <select id="findByUserIdOrderByWeek" resultMap="WlMap">
+        SELECT * FROM workload_weekly WHERE user_id = #{userId} ORDER BY year_week DESC LIMIT #{limit}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO workload_weekly (user_id, team_id, year_week, actual_hours, forecast_hours)
+        VALUES (#{userId}, #{teamId}, #{yearWeek}, #{actualHours}, #{forecastHours})
+        ON DUPLICATE KEY UPDATE
+            actual_hours = VALUES(actual_hours),
+            forecast_hours = VALUES(forecast_hours)
+    </insert>
+</mapper>

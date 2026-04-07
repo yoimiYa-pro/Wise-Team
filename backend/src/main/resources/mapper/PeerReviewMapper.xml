@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.PeerReviewMapper">
+    <resultMap id="PeerMap" type="com.teampm.domain.PeerReview">
+        <id property="id" column="id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="cycleId" column="cycle_id"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="reviewerUserId" column="reviewer_user_id"/>
+        <result property="dimensionScoresJson" column="dimension_scores_json"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByCycleAndTarget" resultMap="PeerMap">
+        SELECT * FROM peer_reviews WHERE cycle_id = #{cycleId} AND target_user_id = #{targetUserId}
+    </select>
+
+    <select id="countByReviewerInCycle" resultType="int">
+        SELECT COUNT(*) FROM peer_reviews
+        WHERE cycle_id = #{cycleId} AND reviewer_user_id = #{reviewerUserId} AND target_user_id = #{targetUserId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO peer_reviews (team_id, cycle_id, target_user_id, reviewer_user_id, dimension_scores_json)
+        VALUES (#{teamId}, #{cycleId}, #{targetUserId}, #{reviewerUserId}, #{dimensionScoresJson})
+    </insert>
+</mapper>

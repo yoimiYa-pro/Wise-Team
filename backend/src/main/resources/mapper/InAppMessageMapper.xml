@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.InAppMessageMapper">
+    <resultMap id="Map" type="com.teampm.domain.InAppMessage">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="body" column="body"/>
+        <result property="msgType" column="msg_type"/>
+        <result property="readFlag" column="read_flag"/>
+        <result property="refType" column="ref_type"/>
+        <result property="refId" column="ref_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="Map">SELECT * FROM in_app_messages WHERE id = #{id}</select>
+
+    <select id="findByUserId" resultMap="Map">
+        SELECT * FROM in_app_messages WHERE user_id = #{userId}
+        ORDER BY id DESC LIMIT #{limit}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO in_app_messages (user_id, title, body, msg_type, read_flag, ref_type, ref_id)
+        VALUES (#{userId}, #{title}, #{body}, #{msgType}, #{readFlag}, #{refType}, #{refId})
+    </insert>
+
+    <update id="markRead">
+        UPDATE in_app_messages SET read_flag = 1 WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="markAllRead">
+        UPDATE in_app_messages SET read_flag = 1 WHERE user_id = #{userId} AND read_flag = 0
+    </update>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM in_app_messages WHERE user_id = #{userId} AND read_flag = 0
+    </select>
+</mapper>

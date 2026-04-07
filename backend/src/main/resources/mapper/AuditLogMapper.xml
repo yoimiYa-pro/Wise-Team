@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.AuditLogMapper">
+    <resultMap id="LogMap" type="com.teampm.domain.AuditLog">
+        <id property="id" column="id"/>
+        <result property="actorId" column="actor_id"/>
+        <result property="action" column="action"/>
+        <result property="resourceType" column="resource_type"/>
+        <result property="resourceId" column="resource_id"/>
+        <result property="detail" column="detail"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO audit_logs (actor_id, action, resource_type, resource_id, detail)
+        VALUES (#{actorId}, #{action}, #{resourceType}, #{resourceId}, #{detail})
+    </insert>
+
+    <select id="findRecent" resultMap="LogMap">
+        SELECT * FROM audit_logs ORDER BY id DESC LIMIT #{limit}
+    </select>
+</mapper>

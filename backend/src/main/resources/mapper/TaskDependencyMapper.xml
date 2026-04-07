@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teampm.mapper.TaskDependencyMapper">
+    <resultMap id="DepMap" type="com.teampm.domain.TaskDependency">
+        <id property="id" column="id"/>
+        <result property="predecessorId" column="predecessor_id"/>
+        <result property="successorId" column="successor_id"/>
+    </resultMap>
+
+    <select id="findBySuccessorId" resultMap="DepMap">SELECT * FROM task_dependencies WHERE successor_id = #{successorId}</select>
+    <select id="findByPredecessorId" resultMap="DepMap">SELECT * FROM task_dependencies WHERE predecessor_id = #{predecessorId}</select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task_dependencies (predecessor_id, successor_id) VALUES (#{predecessorId}, #{successorId})
+    </insert>
+
+    <delete id="deleteBySuccessor">DELETE FROM task_dependencies WHERE successor_id = #{successorId}</delete>
+</mapper>

@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: team-performance
+  datasource:
+    url: jdbc:mysql://localhost:3306/team_pm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.teampm.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: "ChangeThisTo256BitSecretKeyForProductionUseOnly!!"
+    access-minutes: 30
+    refresh-days: 7
+  cors:
+    origins: "http://localhost:5173,http://127.0.0.1:5173"
+  risk:
+    beta0: -2.0
+    beta1: 3.5
+    beta2: 0.4
+    beta3: 1.2
+    red-threshold: 0.7
+    orange-threshold: 0.4
+  load:
+    smoothing-alpha: 0.4
