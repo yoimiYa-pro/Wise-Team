@@ -1,6 +1,10 @@
 <template>
-  <a-layout style="min-height: 100vh">
-    <a-layout-sider breakpoint="lg" :collapsed-width="64">
+  <a-layout class="app-root-layout">
+    <a-layout-sider
+      class="app-sider"
+      breakpoint="lg"
+      :collapsed-width="64"
+    >
       <div class="logo">任务管理与绩效评估系统</div>
       <a-menu
         v-model:selectedKeys="selectedKeys"
@@ -16,7 +20,7 @@
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
-    <a-layout>
+    <a-layout class="app-main">
       <a-layout-header class="header">
         <a-space size="middle">
           <router-link to="/messages" class="msg-bell">
@@ -30,7 +34,7 @@
           <a href="#" @click.prevent="logout">退出</a>
         </a-space>
       </a-layout-header>
-      <a-layout-content class="content">
+      <a-layout-content class="content app-content-scroll">
         <router-view />
       </a-layout-content>
     </a-layout>
@@ -264,6 +268,21 @@ function logout() {
 </script>
 
 <style scoped>
+.app-root-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+.app-sider {
+  height: 100vh;
+  overflow-y: auto;
+}
+.app-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .logo {
   height: 48px;
   margin: 12px;
@@ -274,6 +293,7 @@ function logout() {
   justify-content: center;
 }
 .header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -287,7 +307,10 @@ function logout() {
 .user-meta {
   color: rgba(0, 0, 0, 0.45);
 }
-.content {
+.content.app-content-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   margin: 16px;
 }
 .pick-hint {

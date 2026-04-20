@@ -5,6 +5,9 @@ import com.teampm.mapper.AuditLogMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 关键操作写审计表，供管理端追溯（actor、动作、资源类型与 ID、详情 JSON/文本）。
+ */
 @Service
 @RequiredArgsConstructor
 public class AuditService {

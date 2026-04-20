@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+/**
+ * 认证：用户名密码走 {@link AuthenticationManager}，成功后签发 access/refresh；刷新接口校验 refresh 专用 claims。
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {

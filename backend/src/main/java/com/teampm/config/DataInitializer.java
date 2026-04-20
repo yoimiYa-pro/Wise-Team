@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+/**
+ * 应用启动时若库中无演示账号则写入 admin / manager / member 及示例团队，便于本地联调（生产应关闭或改为迁移数据）。
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

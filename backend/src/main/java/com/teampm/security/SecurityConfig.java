@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security：无状态会话 + JWT 过滤器；{@code /api/admin/**} 需 ADMIN 角色，其余 API 默认需登录。
+ */
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -32,6 +35,9 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * 关闭 CSRF；在表单登录过滤器之前插入 JWT 解析。
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)

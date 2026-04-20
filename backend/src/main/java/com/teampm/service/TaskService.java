@@ -24,6 +24,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 任务生命周期：创建与依赖、指派、进度与风险、审计与站内信；部分规则与 {@link com.teampm.algo.RiskModel} 联动。
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskService {

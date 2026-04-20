@@ -13,6 +13,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * 从 {@code Authorization: Bearer} 头解析访问令牌，校验 {@code type=access} 后载入 {@link UserPrincipal}。
+ * 解析失败或令牌类型不符时不强行中断请求链，由后续规则决定匿名/拒绝。
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -28,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             try {
                 var claims = jwtTokenProvider.parseAccessToken(token);
+                // 刷新令牌与访问令牌共用 Bearer 头时，此处拒绝把 refresh 当 access 用
                 if (!"access".equals(claims.get("type"))) {
                     filterChain.doFilter(request, response);
                     return;
@@ -40,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception ignored) {
+                // 过期/篡改等：清空上下文，避免残留认证信息
                 SecurityContextHolder.clearContext();
             }
         }

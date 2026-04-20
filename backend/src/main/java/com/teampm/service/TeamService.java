@@ -21,6 +21,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 团队与成员关系：{@link #assertManager} / {@link #assertMemberApproved} 等为各业务服务统一的权限断言入口。
+ */
 @Service
 @RequiredArgsConstructor
 public class TeamService {

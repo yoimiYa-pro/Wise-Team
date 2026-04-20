@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * 登录、刷新令牌、当前用户资料；除 {@code /me} 外路径在 {@link com.teampm.security.SecurityConfig} 中匿名放行。
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

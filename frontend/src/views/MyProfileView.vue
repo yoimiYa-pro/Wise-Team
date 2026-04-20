@@ -22,8 +22,14 @@
           <a-descriptions-item label="显示名">{{ me.displayName || "—" }}</a-descriptions-item>
           <a-descriptions-item label="角色">{{ me.role }}</a-descriptions-item>
           <a-descriptions-item label="额定周工时">{{ me.baseCapacity ?? "—" }}</a-descriptions-item>
-          <a-descriptions-item label="技能 JSON">
-            <pre class="skills-preview">{{ prettyJson(me.skillsJson) }}</pre>
+          <a-descriptions-item label="技能与熟练度">
+            <div v-if="skillPreviewRows.length" class="skills-tags">
+              <a-tag v-for="row in skillPreviewRows" :key="row.skillCode" color="blue">
+                {{ row.label }}
+                <span class="skill-prof">{{ formatProficiency(row.proficiency) }}</span>
+              </a-tag>
+            </div>
+            <span v-else class="skills-empty">—</span>
           </a-descriptions-item>
         </a-descriptions>
 
@@ -71,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { message } from "ant-design-vue";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -107,19 +113,29 @@ const catalog = ref<SkillCatalogEntry[]>([]);
 const skillRows = ref<SkillRow[]>([{ skillCode: "coding", proficiency: 0.75 }]);
 const editModalOpen = ref(false);
 
+/** 已生效技能：标签展示用（目录未加载时退回显示 skillCode） */
+const skillPreviewRows = computed(() => {
+  if (!me.value?.skillsJson?.trim()) return [];
+  const rows = parseSkillsJson(me.value.skillsJson);
+  const byCode = new Map(catalog.value.map((e) => [e.skillCode, e.label]));
+  return rows
+    .filter((r) => r.skillCode)
+    .map((r) => ({
+      skillCode: r.skillCode as string,
+      label: byCode.get(r.skillCode as string) || (r.skillCode as string),
+      proficiency: r.proficiency,
+    }));
+});
+
 const form = reactive({
   displayName: "",
   baseCapacity: 40 as number,
   applyReason: "",
 });
 
-function prettyJson(s?: string) {
-  if (s == null || !String(s).trim()) return "—";
-  try {
-    return JSON.stringify(JSON.parse(String(s)), null, 2);
-  } catch {
-    return String(s);
-  }
+function formatProficiency(v: number) {
+  const n = Math.round(v * 100) / 100;
+  return n.toFixed(2).replace(/\.?0+$/, "") || "0";
 }
 
 function formatTime(s?: string) {
@@ -214,13 +230,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.skills-preview {
-  margin: 0;
-  max-height: 160px;
-  overflow: auto;
-  font-size: 12px;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 8px;
-  border-radius: 4px;
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.skill-prof {
+  margin-left: 4px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+.skills-empty {
+  color: rgba(0, 0, 0, 0.45);
 }
 </style>

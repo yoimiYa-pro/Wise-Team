@@ -11,6 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 
+/**
+ * 签发与校验 JWT：访问令牌与刷新令牌使用不同签名密钥（refresh 在 secret 基础上派生），claims 中用 {@code type} 区分。
+ */
 @Component
 public class JwtTokenProvider {
 
@@ -21,6 +24,7 @@ public class JwtTokenProvider {
     public JwtTokenProvider(AppProperties appProperties) {
         this.appProperties = appProperties;
         String secret = appProperties.getJwt().getSecret();
+        // HMAC 需要足够长度；开发环境短 secret 时补齐，避免启动即失败
         if (secret.length() < 32) {
             secret = secret + "0123456789abcdef0123456789ab".substring(0, 32 - secret.length());
         }

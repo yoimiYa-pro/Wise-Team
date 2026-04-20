@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
+/**
+ * 统一 REST 错误体：{@code { "error": "..." }}，业务异常用 {@link ApiException} 携带 HTTP 状态。
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

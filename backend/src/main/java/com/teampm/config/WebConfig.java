@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 跨域：来源列表来自 {@code app.cors.origins}（逗号分隔），与前端开发/部署域名对齐。
+ */
 @Configuration
 public class WebConfig {
 

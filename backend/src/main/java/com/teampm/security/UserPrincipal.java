@@ -6,6 +6,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
+/**
+ * 已认证用户的最小信息集；权限名为 {@code ROLE_} 前缀 + 库中角色字段（如 ADMIN、MANAGER）。
+ */
 @Getter
 public class UserPrincipal implements UserDetails {
     private final Long id;
