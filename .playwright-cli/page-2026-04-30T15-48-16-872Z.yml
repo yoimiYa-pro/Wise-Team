@@ -1,0 +1,27 @@
+- generic [ref=e7]:
+  - banner [ref=e8]:
+    - generic [ref=e10]: WT
+    - heading "团队任务管理与绩效评估" [level=1] [ref=e11]
+    - paragraph [ref=e12]: 登录以管理团队、任务与绩效数据
+  - generic [ref=e13]:
+    - generic [ref=e15]:
+      - generic "用户名" [ref=e17]
+      - generic [ref=e21]:
+        - img "user" [ref=e23]:
+          - img [ref=e24]
+        - textbox "用户名" [ref=e26]:
+          - /placeholder: 例如 admin、manager1、member1
+    - generic [ref=e28]:
+      - generic "密码" [ref=e30]
+      - generic [ref=e34]:
+        - img "lock" [ref=e36]:
+          - img [ref=e37]
+        - textbox "密码" [ref=e39]:
+          - /placeholder: 默认 Admin@123
+        - img "eye-invisible" [ref=e41] [cursor=pointer]:
+          - img [ref=e42]
+    - generic [ref=e46] [cursor=pointer]:
+      - checkbox "记住账号" [ref=e48]
+      - generic [ref=e50]: 记住账号
+    - button "登 录" [ref=e51] [cursor=pointer]:
+      - generic [ref=e52]: 登 录

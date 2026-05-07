@@ -39,6 +39,12 @@
           <template v-if="column.key === 'score'">
             {{ formatScore(record.score) }}
           </template>
+          <template v-else-if="column.key === 'systemNote'">
+            <span v-if="systemNoteText(record)" style="color: rgba(0, 0, 0, 0.65); font-size: 13px">
+              {{ systemNoteText(record) }}
+            </span>
+            <span v-else class="cell-muted">—</span>
+          </template>
         </template>
       </a-table>
     </a-card>
@@ -56,7 +62,22 @@ type ReportRow = {
   cycleId: number;
   userId?: number;
   score?: number;
+  detailJson?: string;
 };
+
+function parseReportDetail(detailJson?: string): { systemDefaultNote?: string; systemNoTaskDefault?: boolean } {
+  if (!detailJson || !detailJson.trim()) return {};
+  try {
+    return JSON.parse(detailJson) as { systemDefaultNote?: string; systemNoTaskDefault?: boolean };
+  } catch {
+    return {};
+  }
+}
+
+function systemNoteText(r: ReportRow): string {
+  const n = parseReportDetail(r.detailJson).systemDefaultNote;
+  return n && n.trim() ? n : "";
+}
 
 const chartEl = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
@@ -77,7 +98,12 @@ const reportsChrono = computed(() => [...reports.value].reverse());
 const columns = [
   { title: "报告 ID", dataIndex: "id", key: "id", width: 100 },
   { title: "绩效周期 ID", dataIndex: "cycleId", key: "cycleId", width: 140 },
-  { title: "综合得分", dataIndex: "score", key: "score" },
+  { title: "综合得分", dataIndex: "score", key: "score", width: 110 },
+  {
+    title: "系统维度说明",
+    key: "systemNote",
+    ellipsis: true,
+  },
 ];
 
 function formatScore(s?: number) {
@@ -154,3 +180,9 @@ onBeforeUnmount(() => {
   chart = null;
 });
 </script>
+
+<style scoped>
+.cell-muted {
+  color: rgba(0, 0, 0, 0.25);
+}
+</style>

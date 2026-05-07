@@ -1,0 +1,109 @@
+- generic [ref=e53]:
+  - complementary [ref=e54]:
+    - generic [ref=e55]:
+      - generic [ref=e56]: 任务管理与绩效评估系统
+      - menu [ref=e57]:
+        - menuitem "dashboard 管理者看板" [ref=e58] [cursor=pointer]:
+          - img "dashboard" [ref=e59]:
+            - img [ref=e60]
+          - generic [ref=e62]: 管理者看板
+        - menuitem "team 团队管理" [active] [ref=e63] [cursor=pointer]:
+          - img "team" [ref=e64]:
+            - img [ref=e65]
+          - generic [ref=e67]: 团队管理
+        - menuitem "project 团队任务" [ref=e68] [cursor=pointer]:
+          - img "project" [ref=e69]:
+            - img [ref=e70]
+          - generic [ref=e72]: 团队任务
+        - menuitem "line-chart AHP 权重" [ref=e73] [cursor=pointer]:
+          - img "line-chart" [ref=e74]:
+            - img [ref=e75]
+          - generic [ref=e77]: AHP 权重
+        - menuitem "line-chart 绩效周期" [ref=e78] [cursor=pointer]:
+          - img "line-chart" [ref=e79]:
+            - img [ref=e80]
+          - generic [ref=e82]: 绩效周期
+        - menuitem "tags 技能可选项" [ref=e83] [cursor=pointer]:
+          - img "tags" [ref=e84]:
+            - img [ref=e85]
+          - generic [ref=e87]: 技能可选项
+        - menuitem "user 个人信息" [ref=e88] [cursor=pointer]:
+          - img "user" [ref=e89]:
+            - img [ref=e90]
+          - generic [ref=e92]: 个人信息
+        - menuitem "bell 消息中心" [ref=e93] [cursor=pointer]:
+          - img "bell" [ref=e94]:
+            - img [ref=e95]
+          - generic [ref=e97]: 消息中心
+        - menuitem "trophy 我的绩效" [ref=e98] [cursor=pointer]:
+          - img "trophy" [ref=e99]:
+            - img [ref=e100]
+          - generic [ref=e102]: 我的绩效
+        - menuitem "check-square 我的任务" [ref=e103] [cursor=pointer]:
+          - img "check-square" [ref=e104]:
+            - img [ref=e105]
+          - generic [ref=e108]: 我的任务
+  - generic [ref=e109]:
+    - generic [ref=e110]:
+      - generic [ref=e111]:
+        - link "WT" [ref=e112] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e113]: WT
+        - navigation "面包屑" [ref=e114]:
+          - navigation [ref=e115]:
+            - list [ref=e116]:
+              - listitem [ref=e117]:
+                - link "首页" [ref=e119] [cursor=pointer]:
+                  - /url: /
+                - text: /
+              - listitem [ref=e120]:
+                - generic [ref=e121]: 团队管理
+      - generic [ref=e123]:
+        - link "bell" [ref=e125] [cursor=pointer]:
+          - /url: /messages
+          - img "bell" [ref=e127]:
+            - img [ref=e128]
+        - generic [ref=e130]: manager1（MANAGER）
+        - link "退出" [ref=e132] [cursor=pointer]:
+          - /url: "#"
+    - main [ref=e133]:
+      - generic [ref=e174]:
+        - generic [ref=e177]: 团队管理
+        - generic [ref=e179]:
+          - generic [ref=e181]:
+            - generic [ref=e183]:
+              - text: 当前共
+              - strong [ref=e184]: "1"
+              - text: 个团队 （您作为管理者）
+            - button "新建团队" [ref=e186] [cursor=pointer]:
+              - generic [ref=e187]: 新建团队
+          - table [ref=e195]:
+            - rowgroup [ref=e203]:
+              - row "ID 名称 管理者 成员数 状态 快捷入口" [ref=e204]:
+                - columnheader "ID" [ref=e205]
+                - columnheader "名称" [ref=e206]
+                - columnheader "管理者" [ref=e207]
+                - columnheader "成员数" [ref=e208]
+                - columnheader "状态" [ref=e209]
+                - columnheader "快捷入口" [ref=e210]
+            - rowgroup [ref=e211]:
+              - row "1 示例研发团队 manager1 3 ACTIVE 团队任务 AHP 绩效 成员 编辑 归档" [ref=e212]:
+                - cell "1" [ref=e213]
+                - cell "示例研发团队" [ref=e214]
+                - cell "manager1" [ref=e215]
+                - cell "3" [ref=e216]
+                - cell "ACTIVE" [ref=e217]
+                - cell "团队任务 AHP 绩效 成员 编辑 归档" [ref=e218]:
+                  - generic [ref=e219]:
+                    - button "团队任务" [ref=e221] [cursor=pointer]:
+                      - generic [ref=e222]: 团队任务
+                    - button "AHP" [ref=e224] [cursor=pointer]:
+                      - generic [ref=e225]: AHP
+                    - button "绩效" [ref=e227] [cursor=pointer]:
+                      - generic [ref=e228]: 绩效
+                    - button "成员" [ref=e230] [cursor=pointer]:
+                      - generic [ref=e231]: 成员
+                    - button "编辑" [ref=e233] [cursor=pointer]:
+                      - generic [ref=e234]: 编辑
+                    - button "归档" [ref=e236] [cursor=pointer]:
+                      - generic [ref=e237]: 归档

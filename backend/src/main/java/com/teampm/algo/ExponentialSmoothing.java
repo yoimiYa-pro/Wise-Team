@@ -12,7 +12,7 @@ public final class ExponentialSmoothing {
      */
     public static double nextForecast(List<Double> historyOldestFirst, double alpha, double initialF) {
         if (historyOldestFirst == null || historyOldestFirst.isEmpty()) {
-            return initialF;
+            return initialF;//没有历史数据就返回初始值
         }
         double f = initialF;
         for (double y : historyOldestFirst) {

@@ -1,0 +1,116 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 任务管理与绩效评估系统
+      - menu [ref=e7]:
+        - menuitem "dashboard 管理者看板" [ref=e8] [cursor=pointer]:
+          - img "dashboard" [ref=e9]:
+            - img [ref=e10]
+          - generic [ref=e12]: 管理者看板
+        - menuitem "team 团队管理" [ref=e13] [cursor=pointer]:
+          - img "team" [ref=e14]:
+            - img [ref=e15]
+          - generic [ref=e17]: 团队管理
+        - menuitem "project 团队任务" [ref=e18] [cursor=pointer]:
+          - img "project" [ref=e19]:
+            - img [ref=e20]
+          - generic [ref=e22]: 团队任务
+        - menuitem "line-chart AHP 权重" [ref=e23] [cursor=pointer]:
+          - img "line-chart" [ref=e24]:
+            - img [ref=e25]
+          - generic [ref=e27]: AHP 权重
+        - menuitem "line-chart 绩效周期" [ref=e28] [cursor=pointer]:
+          - img "line-chart" [ref=e29]:
+            - img [ref=e30]
+          - generic [ref=e32]: 绩效周期
+        - menuitem "tags 技能可选项" [ref=e33] [cursor=pointer]:
+          - img "tags" [ref=e34]:
+            - img [ref=e35]
+          - generic [ref=e37]: 技能可选项
+        - menuitem "user 个人信息" [ref=e38] [cursor=pointer]:
+          - img "user" [ref=e39]:
+            - img [ref=e40]
+          - generic [ref=e42]: 个人信息
+        - menuitem "bell 消息中心" [ref=e43] [cursor=pointer]:
+          - img "bell" [ref=e44]:
+            - img [ref=e45]
+          - generic [ref=e47]: 消息中心
+        - menuitem "trophy 我的绩效" [ref=e48] [cursor=pointer]:
+          - img "trophy" [ref=e49]:
+            - img [ref=e50]
+          - generic [ref=e52]: 我的绩效
+        - menuitem "check-square 我的任务" [ref=e53] [cursor=pointer]:
+          - img "check-square" [ref=e54]:
+            - img [ref=e55]
+          - generic [ref=e58]: 我的任务
+  - generic [ref=e59]:
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - link "WT" [ref=e62] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e63]: WT
+        - navigation "面包屑" [ref=e64]:
+          - navigation [ref=e65]:
+            - list [ref=e66]:
+              - listitem [ref=e67]:
+                - link "首页" [ref=e69] [cursor=pointer]:
+                  - /url: /
+                - text: /
+              - listitem [ref=e70]:
+                - generic [ref=e71]: 我的任务
+      - generic [ref=e73]:
+        - link "bell" [ref=e75] [cursor=pointer]:
+          - /url: /messages
+          - img "bell" [ref=e77]:
+            - img [ref=e78]
+        - generic [ref=e80]: manager1（MANAGER）
+        - link "退出" [ref=e82] [cursor=pointer]:
+          - /url: "#"
+    - main [ref=e83]:
+      - generic [ref=e84]:
+        - generic [ref=e87]: 我的任务
+        - generic [ref=e89]:
+          - table [ref=e97]:
+            - rowgroup [ref=e104]:
+              - row "标题 状态 风险 进度 状态申请" [ref=e105]:
+                - columnheader "标题" [ref=e106]
+                - columnheader "状态" [ref=e107]
+                - columnheader "风险" [ref=e108]
+                - columnheader "进度" [ref=e109]
+                - columnheader "状态申请" [ref=e110]
+            - rowgroup [ref=e111]:
+              - row "No data" [ref=e112]:
+                - cell "No data" [ref=e113]:
+                  - generic [ref=e114]:
+                    - img [ref=e116]
+                    - paragraph [ref=e122]: No data
+          - generic [ref=e124]:
+            - generic [ref=e127]: 本周实际工时（供负载预测）
+            - generic [ref=e129]:
+              - generic [ref=e131]:
+                - generic "团队" [ref=e133]: "* 团队 :"
+                - generic [ref=e137] [cursor=pointer]:
+                  - combobox "* 团队 :" [ref=e140]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e142]:
+                - generic "小时" [ref=e144]: "* 小时 :"
+                - generic [ref=e148]:
+                  - generic [ref=e149]:
+                    - button "Increase Value" [ref=e150] [cursor=pointer]:
+                      - img "up" [ref=e151]:
+                        - img [ref=e152]
+                    - button "Decrease Value" [ref=e154] [cursor=pointer]:
+                      - img "down" [ref=e155]:
+                        - img [ref=e156]
+                  - spinbutton "* 小时 :" [ref=e159]: "8"
+              - button "提 交" [ref=e160] [cursor=pointer]:
+                - generic [ref=e161]: 提 交
+          - generic [ref=e163]:
+            - generic [ref=e166]: 工时记录与负载预测
+            - generic [ref=e169]:
+              - generic [ref=e170]: 历史为最近至多 24 周、按您本人汇总的填报记录（含各团队，不按上方下拉过滤）；预测中的「任务排期」为截止日在该周内的任务剩余工时估算。
+              - generic [ref=e171]:
+                - img [ref=e173]
+                - paragraph [ref=e185]: 请先选择团队

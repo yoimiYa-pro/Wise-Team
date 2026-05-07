@@ -3,18 +3,22 @@
   <a-card v-else :title="isMember ? '我的团队' : '团队管理'">
     <a-space direction="vertical" style="width: 100%" size="middle">
       <a-typography-text v-if="isMember" type="secondary">
-        以下为已批准加入的团队，仅可查看信息与进入团队任务；AHP、绩效配置等需团队管理者操作。
+        每个账号仅可隶属于一个团队。以下为当前所属团队，仅可查看信息与进入团队任务；AHP、绩效配置等需团队管理者操作。
       </a-typography-text>
 
-      <a-card v-if="isMember" type="inner" title="申请加入其他团队" size="small">
+      <a-card v-if="isMember && teams.length === 0" type="inner" title="申请加入团队" size="small">
         <a-typography-text type="secondary" style="display: block; margin-bottom: 8px">
-          请输入团队 ID（可向团队管理者索取）。提交后为待审核状态，需管理者在「成员」中通过。
+          请输入团队 ID（可向团队管理者索取）。每人仅可加入一个团队；提交后为待审核状态，需管理者在「成员」中通过。
         </a-typography-text>
         <a-space wrap align="center">
           <a-input-number v-model:value="joinTeamId" :min="1" placeholder="团队 ID" style="width: 180px" />
           <a-button type="primary" :loading="joinSaving" @click="submitJoinTeam">申请加入</a-button>
         </a-space>
       </a-card>
+
+      <a-typography-text v-else-if="isMember && teams.length > 0" type="secondary">
+        您已加入团队。若需更换团队，请联系当前团队管理者将您从成员中移除后，再申请其他团队。
+      </a-typography-text>
 
       <a-space wrap align="center">
         <a-typography-text>

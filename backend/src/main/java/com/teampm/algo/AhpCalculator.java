@@ -7,7 +7,7 @@ import lombok.Data;
  */
 public final class AhpCalculator {
 
-    private static final double[] RI = {0, 0, 0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49};
+    private static final double[] RI = {0, 0, 0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49};//基准矩阵
 
     private AhpCalculator() {
     }
@@ -20,7 +20,7 @@ public final class AhpCalculator {
         private double cr;
         private boolean consistent;
     }
-
+    //归一化处理函数
     public static AhpResult compute(double[][] matrix) {
         int n = matrix.length;
         if (n == 0 || n != matrix[0].length) {
@@ -30,30 +30,30 @@ public final class AhpCalculator {
         for (int j = 0; j < n; j++) {
             double colSum = 0;
             for (int i = 0; i < n; i++) {
-                colSum += matrix[i][j];
+                colSum += matrix[i][j];//计算第j列的和
             }
             for (int i = 0; i < n; i++) {
-                norm[i][j] = matrix[i][j] / colSum;
+                norm[i][j] = matrix[i][j] / colSum;//每一个元素都除以和
             }
         }
-        double[] w = new double[n];
+        double[] w = new double[n];//权重向量
         for (int i = 0; i < n; i++) {
             double rowSum = 0;
             for (int j = 0; j < n; j++) {
-                rowSum += norm[i][j];
+                rowSum += norm[i][j];//第i行的和
             }
-            w[i] = rowSum / n;
+            w[i] = rowSum / n;//每行取平均值
         }
-        double lambdaMax = 0;
+        double lambdaMax = 0;//最大特征值
         for (int i = 0; i < n; i++) {
             double sum = 0;
             for (int j = 0; j < n; j++) {
-                sum += matrix[i][j] * w[j];
+                sum += matrix[i][j] * w[j];//矩阵乘以权重
             }
-            lambdaMax += sum / w[i];
+            lambdaMax += sum / w[i];//累加
         }
         lambdaMax /= n;
-        double ci = (lambdaMax - n) / (n - 1);
+        double ci = (lambdaMax - n) / (n - 1);//计算一致性指标
         double ri = n < RI.length ? RI[n] : RI[RI.length - 1];
         double cr = ri > 0 ? ci / ri : 0;
         AhpResult r = new AhpResult();

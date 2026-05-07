@@ -1,0 +1,91 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e169]:
+    - complementary [ref=e170]:
+      - generic [ref=e171]:
+        - generic [ref=e172]: 任务管理与绩效评估系统
+        - menu [ref=e173]:
+          - menuitem "user 用户管理" [ref=e174] [cursor=pointer]:
+            - img "user" [ref=e175]:
+              - img [ref=e176]
+            - generic [ref=e178]: 用户管理
+          - menuitem "audit 审计日志" [ref=e179] [cursor=pointer]:
+            - img "audit" [ref=e180]:
+              - img [ref=e181]
+            - generic [ref=e183]: 审计日志
+          - menuitem "setting 系统参数" [ref=e184] [cursor=pointer]:
+            - img "setting" [ref=e185]:
+              - img [ref=e186]
+            - generic [ref=e188]: 系统参数
+          - menuitem "dashboard 管理者看板" [ref=e189] [cursor=pointer]:
+            - img "dashboard" [ref=e190]:
+              - img [ref=e191]
+            - generic [ref=e193]: 管理者看板
+          - menuitem "team 团队管理" [ref=e194] [cursor=pointer]:
+            - img "team" [ref=e195]:
+              - img [ref=e196]
+            - generic [ref=e198]: 团队管理
+          - menuitem "project 团队任务" [ref=e199] [cursor=pointer]:
+            - img "project" [ref=e200]:
+              - img [ref=e201]
+            - generic [ref=e203]: 团队任务
+          - menuitem "line-chart AHP 权重" [ref=e204] [cursor=pointer]:
+            - img "line-chart" [ref=e205]:
+              - img [ref=e206]
+            - generic [ref=e208]: AHP 权重
+          - menuitem "line-chart 绩效周期" [ref=e209] [cursor=pointer]:
+            - img "line-chart" [ref=e210]:
+              - img [ref=e211]
+            - generic [ref=e213]: 绩效周期
+          - menuitem "tags 技能可选项" [ref=e214] [cursor=pointer]:
+            - img "tags" [ref=e215]:
+              - img [ref=e216]
+            - generic [ref=e218]: 技能可选项
+          - menuitem "bell 消息中心" [ref=e219] [cursor=pointer]:
+            - img "bell" [ref=e220]:
+              - img [ref=e221]
+            - generic [ref=e223]: 消息中心
+          - menuitem "trophy 我的绩效" [ref=e224] [cursor=pointer]:
+            - img "trophy" [ref=e225]:
+              - img [ref=e226]
+            - generic [ref=e228]: 我的绩效
+          - menuitem "check-square 我的任务" [ref=e229] [cursor=pointer]:
+            - img "check-square" [ref=e230]:
+              - img [ref=e231]
+            - generic [ref=e234]: 我的任务
+    - generic [ref=e235]:
+      - generic [ref=e236]:
+        - generic [ref=e237]:
+          - link "WT" [ref=e238] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e239]: WT
+          - navigation "面包屑" [ref=e240]:
+            - navigation [ref=e241]:
+              - list [ref=e242]:
+                - listitem [ref=e243]:
+                  - link "首页" [ref=e245] [cursor=pointer]:
+                    - /url: /
+                  - text: /
+                - listitem [ref=e246]:
+                  - generic [ref=e247]: 管理者看板
+        - generic [ref=e249]:
+          - link "bell" [ref=e251] [cursor=pointer]:
+            - /url: /messages
+            - img "bell" [ref=e253]:
+              - img [ref=e254]
+          - generic [ref=e256]: admin（ADMIN）
+          - link "退出" [ref=e258] [cursor=pointer]:
+            - /url: "#"
+      - main [ref=e259]:
+        - generic [ref=e260]:
+          - heading "管理者看板" [level=4] [ref=e262]
+          - generic [ref=e264] [cursor=pointer]:
+            - generic [ref=e265]:
+              - combobox [ref=e267]
+              - generic "示例研发团队" [ref=e268]
+            - generic:
+              - img:
+                - img
+  - generic [ref=e296]:
+    - img "check-circle" [ref=e297]:
+      - img [ref=e298]
+    - text: 登录成功

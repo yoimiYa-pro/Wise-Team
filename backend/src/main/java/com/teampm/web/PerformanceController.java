@@ -2,6 +2,7 @@ package com.teampm.web;
 
 import com.teampm.domain.PerformanceCycle;
 import com.teampm.domain.PerformanceReport;
+import com.teampm.domain.Team;
 import com.teampm.security.SecurityUtils;
 import com.teampm.service.PerformanceService;
 import lombok.Data;
@@ -27,6 +28,16 @@ public class PerformanceController {
     @GetMapping("/teams/{teamId}/cycles")
     public List<PerformanceCycle> cycles(@PathVariable Long teamId) {
         return performanceService.cycles(teamId, SecurityUtils.requireUser());
+    }
+
+    @GetMapping("/teams/{teamId}/peer-review-cycles")
+    public List<PerformanceCycle> peerReviewCycles(@PathVariable Long teamId) {
+        return performanceService.peerReviewEligibleCycles(teamId, SecurityUtils.requireUser());
+    }
+
+    @GetMapping("/peer-review/eligible-teams")
+    public List<Team> peerReviewEligibleTeams() {
+        return performanceService.teamsWithPeerReviewWindow(SecurityUtils.requireUser());
     }
 
     @PostMapping("/teams/{teamId}/cycles")

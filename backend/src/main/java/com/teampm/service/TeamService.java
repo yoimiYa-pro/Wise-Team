@@ -54,6 +54,10 @@ public class TeamService {
         if ("ADMIN".equals(p.getRole())) {
             return;
         }
+        Team t = teamMapper.findById(teamId);
+        if (t != null && t.getManagerId() != null && t.getManagerId().equals(p.getId())) {
+            return;
+        }
         TeamMember tm = teamMemberMapper.findByTeamAndUser(teamId, p.getId());
         if (tm == null || !"APPROVED".equals(tm.getApprovalStatus())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "非本团队成员");
@@ -125,6 +129,9 @@ public class TeamService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "需指定管理者");
         }
         team.setStatus("ACTIVE");
+        if (membershipOfUser(team.getManagerId()) != null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "负责人已在其他团队中，请先退出原团队后再创建");
+        }
         teamMapper.insert(team);
         Long tid = team.getId();
         if (teamMemberMapper.findByTeamAndUser(tid, team.getManagerId()) == null) {
@@ -173,6 +180,10 @@ public class TeamService {
         if (existing != null) {
             throw new ApiException(HttpStatus.CONFLICT, "已申请或已在团队中");
         }
+        TeamMember otherTeam = membershipOfUser(user.getId());
+        if (otherTeam != null) {
+            throw new ApiException(HttpStatus.CONFLICT, "每人仅可属于一个团队，请先退出当前团队后再申请");
+        }
         TeamMember tm = new TeamMember();
         tm.setTeamId(teamId);
         tm.setUserId(user.getId());
@@ -212,6 +223,10 @@ public class TeamService {
             if (approved.contains(u.getId())) {
                 continue;
             }
+            TeamMember um = membershipOfUser(u.getId());
+            if (um != null && !um.getTeamId().equals(teamId)) {
+                continue;
+            }
             out.add(new AssignableUserDto(u.getId(), u.getUsername(), u.getDisplayName()));
         }
         return out;
@@ -230,6 +245,10 @@ public class TeamService {
         }
         if (u.getStatus() != null && u.getStatus() == 0) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "该用户已禁用，无法加入团队");
+        }
+        TeamMember elsewhere = membershipOfUser(userId);
+        if (elsewhere != null && !elsewhere.getTeamId().equals(teamId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "该用户已隶属于其他团队");
         }
         TeamMember existing = teamMemberMapper.findByTeamAndUser(teamId, userId);
         if (existing != null) {
@@ -274,6 +293,16 @@ public class TeamService {
     public List<AssignableUserDto> listAssignableUsers(Long teamId, UserPrincipal actor) {
         Team t = requireTeam(teamId);
         assertManager(actor, t);
+        return approvedMemberAssignableDtos(teamId);
+    }
+
+    /** 互评被评价人候选：已批准成员均可查看（用于同事互评页） */
+    public List<AssignableUserDto> listPeerReviewTargets(Long teamId, UserPrincipal actor) {
+        assertMemberApproved(actor, teamId);
+        return approvedMemberAssignableDtos(teamId);
+    }
+
+    private List<AssignableUserDto> approvedMemberAssignableDtos(Long teamId) {
         List<Long> ids = teamMemberMapper.findApprovedUserIds(teamId);
         List<AssignableUserDto> out = new ArrayList<>(ids.size());
         for (Long uid : ids) {
@@ -305,7 +334,13 @@ public class TeamService {
         }
         Team t = requireTeam(tm.getTeamId());
         assertManager(actor, t);
-        teamMemberMapper.updateApproval(memberRowId, "REJECTED");
+        teamMemberMapper.deleteById(memberRowId);
         auditService.log(actor.getId(), "TEAM_MEMBER_REJECT", "TeamMember", memberRowId, null);
+    }
+
+    /** 用户当前至多一条成员记录（与 uk_team_members_user_id 一致） */
+    private TeamMember membershipOfUser(Long userId) {
+        List<TeamMember> list = teamMemberMapper.findByUserId(userId);
+        return list.isEmpty() ? null : list.get(0);
     }
 }

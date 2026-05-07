@@ -1,5 +1,5 @@
 <template>
-  <a-space direction="vertical" size="large" style="width: 100%">
+  <a-space direction="vertical" size="middle" style="width: 100%">
     <a-typography-title :level="4" style="margin: 0">管理者看板</a-typography-title>
     <a-select
       v-model:value="teamId"
@@ -135,8 +135,23 @@ watch(
       vals.push(0);
     }
     const radarOpt = {
-      title: { text: "风险概率雷达（进行中任务）", left: "center" },
-      radar: { indicator: indicators },
+      title: {
+        text: "风险概率雷达（进行中任务）",
+        left: "center",
+        top: 10,
+        textStyle: { fontSize: 14 },
+      },
+      // 雷达下移，避免顶部轴任务名与标题字重迭（默认 center 偏上时顶点标签会顶到标题）
+      radar: {
+        indicator: indicators,
+        center: ["50%", "58%"],
+        radius: "58%",
+        axisName: {
+          color: "rgba(0, 0, 0, 0.65)",
+          fontSize: 11,
+          lineHeight: 14,
+        },
+      },
       series: [{ type: "radar", data: [{ value: vals, name: "延期概率" }] }],
     };
     pieChart = echarts.init(pieEl.value);

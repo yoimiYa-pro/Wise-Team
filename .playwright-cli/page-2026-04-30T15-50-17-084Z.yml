@@ -1,0 +1,78 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 任务管理与绩效评估系统
+      - menu [ref=e7]:
+        - menuitem "dashboard 管理者看板" [ref=e8] [cursor=pointer]:
+          - img "dashboard" [ref=e9]:
+            - img [ref=e10]
+          - generic [ref=e12]: 管理者看板
+        - menuitem "team 团队管理" [ref=e13] [cursor=pointer]:
+          - img "team" [ref=e14]:
+            - img [ref=e15]
+          - generic [ref=e17]: 团队管理
+        - menuitem "project 团队任务" [ref=e18] [cursor=pointer]:
+          - img "project" [ref=e19]:
+            - img [ref=e20]
+          - generic [ref=e22]: 团队任务
+        - menuitem "line-chart AHP 权重" [ref=e23] [cursor=pointer]:
+          - img "line-chart" [ref=e24]:
+            - img [ref=e25]
+          - generic [ref=e27]: AHP 权重
+        - menuitem "line-chart 绩效周期" [ref=e28] [cursor=pointer]:
+          - img "line-chart" [ref=e29]:
+            - img [ref=e30]
+          - generic [ref=e32]: 绩效周期
+        - menuitem "tags 技能可选项" [ref=e33] [cursor=pointer]:
+          - img "tags" [ref=e34]:
+            - img [ref=e35]
+          - generic [ref=e37]: 技能可选项
+        - menuitem "user 个人信息" [ref=e38] [cursor=pointer]:
+          - img "user" [ref=e39]:
+            - img [ref=e40]
+          - generic [ref=e42]: 个人信息
+        - menuitem "bell 消息中心" [ref=e43] [cursor=pointer]:
+          - img "bell" [ref=e44]:
+            - img [ref=e45]
+          - generic [ref=e47]: 消息中心
+        - menuitem "trophy 我的绩效" [ref=e48] [cursor=pointer]:
+          - img "trophy" [ref=e49]:
+            - img [ref=e50]
+          - generic [ref=e52]: 我的绩效
+        - menuitem "check-square 我的任务" [ref=e53] [cursor=pointer]:
+          - img "check-square" [ref=e54]:
+            - img [ref=e55]
+          - generic [ref=e58]: 我的任务
+  - generic [ref=e59]:
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - link "WT" [ref=e62] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e63]: WT
+        - navigation "面包屑" [ref=e64]:
+          - navigation [ref=e65]:
+            - list [ref=e66]:
+              - listitem [ref=e67]:
+                - link "首页" [ref=e69] [cursor=pointer]:
+                  - /url: /
+                - text: /
+              - listitem [ref=e70]:
+                - generic [ref=e71]: 管理者看板
+      - generic [ref=e73]:
+        - link "bell" [ref=e75] [cursor=pointer]:
+          - /url: /messages
+          - img "bell" [ref=e77]:
+            - img [ref=e78]
+        - generic [ref=e80]: manager1（MANAGER）
+        - link "退出" [ref=e82] [cursor=pointer]:
+          - /url: "#"
+    - main [ref=e83]:
+      - generic [ref=e84]:
+        - heading "管理者看板" [level=4] [ref=e86]
+        - generic [ref=e88] [cursor=pointer]:
+          - generic [ref=e89]:
+            - combobox [ref=e91]
+            - generic: 选择团队
+          - generic:
+            - img:
+              - img

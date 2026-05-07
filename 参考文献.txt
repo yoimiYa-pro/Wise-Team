@@ -1,0 +1,23 @@
+[1]胡佳杰,谢国锋.基于AHP与模糊综合评价法的全回转拖船驾驶员胜任力评估[J].航海技术,2026,(02):13-19.
+[2]李淼淼,季节,李坡,等.基于SpringBoot和Vue 3的移动学习管理系统的设计与实现[J].无线互联科技,2026,23(04):81-86.
+[3]覃国强,李婉仪,梁家菲,等.基于层次分析法的公立医院员工科研绩效评价指标体系研究[J].现代医院,2025,25(11):1718-1722+1728.
+[4]崔靖茹,文华,刘宏磊,等.基于Vue和SpringBoot框架的高校信息化项目管理系统的设计与实现[J].现代信息科技,2025,9(22):77-81.DOI:10.19850/j.cnki.2096-4706.2025.22.014.
+[5]王伟峰,张玉凤,杨榆,等.面向技能匹配的高校学生就业能力评价系统设计与实现[J].信息与电脑,2025,37(23):239-241.
+[6]霍福华.“Vue+Spring Boot+MyBatis”技术应用探讨[J].企业科技与发展,2025,(10):76-81.DOI:10.20137/j.qykjyfz.45-1359/t./20251010.014.
+[7]张秀霞.基于层次分析法事业单位预算项目绩效评价指标体系构建及应用研究[J].中国乡镇企业会计,2025,(15):8-10.
+[8]张俊.H公司员工绩效评价优化研究[D].华东交通大学,2025.DOI:10.27147/d.cnki.ghdju.2025.000412.
+[9]卢万有.基于JWT的RBAC在前后端分离项目中的设计与实现[J].电脑编程技巧与维护,2025,(01):46-48.DOI:10.16184/j.cnki.comprg.2025.01.004.
+[10]程哲桥,魏小迪.基于Vue+Echarts的高校体测可视化信息系统的研究与实现[C]//全国高等学校计算机教育研究会.第32届计算机新科技与教育学术会议论文集.南宁学院信息工程学院;,2025:275-281.DOI:10.26914/c.cnkihy.2025.012305.
+[11]吕玉桂.Spring Security+JWT实现微服务架构中的身份验证和授权[J].电脑知识与技术,2024,20(22):60-63.DOI:10.14004/j.cnki.ckt.2024.1219.
+[12]李峰.基于BSC-AHP模型的ZA小贷公司绩效考核体系优化研究[D].长江大学,2024.DOI:10.26981/d.cnki.gjhsc.2024.001069.
+[13]David R E ,Mauricio L ,Gerardo M , et al.Selection of software agile practices using Analytic hierarchy process[J].Heliyon,2024,10(1):e22948-.DOI:10.1016/J.HELIYON.2023.E22948.
+[14]Mohd. N ,Chaudhary M W ,Mohd. S .A comparison between fuzzy AHP and fuzzy TOPSIS methods to software requirements selection[J].Alexandria Engineering Journal,2022,61(12):10851-10870.DOI:10.1016/J.AEJ.2022.04.005.
+[15]Azadmanesh A ,Maleki R M.Sustainable performance evaluation: a practical approach based on fuzzy best-worst method and fuzzy inference system[J].International Journal of Applied Decision Sciences,2022,15(2):201-220.DOI:10.1504/IJADS.2022.121553.
+[16]Peregrin S ,Jablonsky J.Comparison of the analytic hierarchy process and the analytic network process in human resource management[J].International Journal of Human Resources Development and Management,2021,21(1):75-93.DOI:10.1504/IJHRDM.2021.114898.
+[17]Amiri M ,Hashemi-Tabatabaei M ,Ghahremanloo M , et al.A new fuzzy approach based on BWM and fuzzy preference programming for hospital performance evaluation: A case study[J].Applied Soft Computing Journal,2020,92(prepublish):DOI:10.1016/j.asoc.2020.106279.
+[18]Ramit M ,Sandeep S ,C. S G .A Brief Survey on Fuzzy Logic Systems for Performance Appraisal[J].International Journal of Computer Applications,2018,181(24):39-42.DOI:10.5120/ijca2018918036.
+[19]骆亮.基于内容推荐算法和余弦相似度算法的领导决策辅助信息系统[J].广西科学院学报,2018,34(02):143-150.DOI:10.13657/j.cnki.gxkxyxb.20180601.001.
+[20]Software; Researchers from Payame Noor University Describe Findings in Software (Prioritizing key success factors of software projects using fuzzy AHP)[J].Computers, Networks & Communications,2018,
+[21]孙志朋.面向软件项目管理的团队协作平台的设计与实现[D].哈尔滨工业大学,2017.
+[22]Samuel W O ,Omisore O M ,Atajeromavwo J E .Online fuzzy based decision support system for human resource performance appraisal[J].Measurement,2014,55452-461.DOI:10.1016/j.measurement.2014.05.024.
+[23]Chai J ,Liu N J ,Ngai W E .Application of decision-making techniques in supplier selection: A systematic review of literature[J].Expert Systems With Applications,2013,40(10):3872-3885.DOI:10.1016/j.eswa.2012.12.040.

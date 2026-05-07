@@ -1,5 +1,6 @@
 package com.teampm.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +26,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> denied(AccessDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", "无权限"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> dataIntegrity(DataIntegrityViolationException e) {
+        String m = e.getMostSpecificCause() != null ? e.getMostSpecificCause().getMessage() : e.getMessage();
+        if (m != null && m.contains("uk_peer_cycle_reviewer_target")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "本轮已评价过该同事"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "数据约束冲突"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

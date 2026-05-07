@@ -22,17 +22,35 @@
     </a-layout-sider>
     <a-layout class="app-main">
       <a-layout-header class="header">
-        <a-space size="middle">
-          <router-link to="/messages" class="msg-bell">
-            <a-badge :count="msgUnread" :overflow-count="99">
-              <BellOutlined
-                style="font-size: 20px; color: rgba(0, 0, 0, 0.65)"
-              />
-            </a-badge>
+        <div class="header-bg" aria-hidden="true" />
+        <div class="header-left">
+          <router-link to="/" class="header-mark-link" title="任务管理与绩效评估系统 · 返回首页">
+            <span class="header-mark">WT</span>
           </router-link>
-          <span class="user-meta">{{ username }}（{{ roleDisplay }}）</span>
-          <a href="#" @click.prevent="logout">退出</a>
-        </a-space>
+          <nav class="header-breadcrumb-wrap" aria-label="面包屑">
+            <a-breadcrumb class="header-breadcrumb" separator="/">
+              <a-breadcrumb-item v-for="(item, idx) in breadcrumbItems" :key="`${idx}-${item.title}`">
+                <router-link v-if="item.to != null && idx < breadcrumbItems.length - 1" :to="item.to">
+                  {{ item.title }}
+                </router-link>
+                <span v-else>{{ item.title }}</span>
+              </a-breadcrumb-item>
+            </a-breadcrumb>
+          </nav>
+        </div>
+        <div class="header-right">
+          <a-space size="middle">
+            <router-link to="/messages" class="msg-bell">
+              <a-badge :count="msgUnread" :overflow-count="99">
+                <BellOutlined
+                  style="font-size: 20px; color: rgba(0, 0, 0, 0.65)"
+                />
+              </a-badge>
+            </router-link>
+            <span class="user-meta">{{ username }}（{{ roleDisplay }}）</span>
+            <a href="#" @click.prevent="logout">退出</a>
+          </a-space>
+        </div>
       </a-layout-header>
       <a-layout-content class="content app-content-scroll">
         <router-view />
@@ -71,6 +89,7 @@ import {
   AuditOutlined,
   BellOutlined,
   CheckSquareOutlined,
+  CommentOutlined,
   DashboardOutlined,
   LineChartOutlined,
   ProjectOutlined,
@@ -84,8 +103,67 @@ import {
 const router = useRouter();
 const route = useRoute();
 
+type BreadcrumbItem = { title: string; to?: string };
+
+/** 顶栏面包屑（与路由一致；团队子页带「团队管理」入口） */
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+  const p = route.path;
+  const name = route.name as string | undefined;
+  const items: BreadcrumbItem[] = [{ title: "首页", to: "/" }];
+
+  if (p === "/" || p === "") {
+    return items;
+  }
+
+  const tid = route.params.teamId as string | undefined;
+  if (name === "tasks" && tid != null && tid !== "") {
+    items.push({ title: "团队管理", to: "/teams" });
+    items.push({ title: `团队任务 · 团队 #${tid}` });
+    return items;
+  }
+  if (name === "ahp" && tid != null && tid !== "") {
+    items.push({ title: "团队管理", to: "/teams" });
+    items.push({ title: `AHP 权重 · 团队 #${tid}` });
+    return items;
+  }
+  if (name === "performance" && tid != null && tid !== "") {
+    const role = localStorage.getItem("role") || "MEMBER";
+    if (role === "MEMBER") {
+      items.push({ title: "我的团队", to: "/teams" });
+      items.push({ title: `同事互评 · 团队 #${tid}` });
+      return items;
+    }
+    items.push({ title: "团队管理", to: "/teams" });
+    items.push({ title: `绩效周期 · 团队 #${tid}` });
+    return items;
+  }
+
+  const flat: Record<string, string> = {
+    dashboard: "管理者看板",
+    teams: "团队管理",
+    "my-performance": "我的绩效",
+    "my-tasks": "我的任务",
+    "my-profile": "个人信息",
+    messages: "消息中心",
+    "admin-users": "用户管理",
+    "admin-audit": "审计日志",
+    "admin-system": "系统参数",
+    "admin-skill-options": "技能可选项",
+  };
+  if (name && flat[name]) {
+    items.push({ title: flat[name] });
+    return items;
+  }
+
+  items.push({ title: "当前页" });
+  return items;
+});
+
 const roleDisplay = computed(() => localStorage.getItem("role") || "MEMBER");
 const username = computed(() => localStorage.getItem("username") || "");
+
+/** 成员侧栏「同事互评」：后端判定当前日期落在某开放周期内时才展示 */
+const peerReviewEligibleTeams = ref<{ id: number; name: string }[]>([]);
 
 const menuItems = computed(() => {
   const r = roleDisplay.value;
@@ -109,6 +187,13 @@ const menuItems = computed(() => {
   }
   if (r === "MEMBER") {
     items.push({ key: "/teams", label: "我的团队", icon: TeamOutlined });
+    if (peerReviewEligibleTeams.value.length > 0) {
+      items.push({
+        key: "/peer-review-link",
+        label: "同事互评",
+        icon: CommentOutlined,
+      });
+    }
   }
   if (r === "MEMBER" || r === "MANAGER") {
     items.push({ key: "/my-profile", label: "个人信息", icon: UserOutlined });
@@ -131,7 +216,7 @@ const menuItems = computed(() => {
 
 const selectedKeys = ref<string[]>(["/dashboard"]);
 
-type PickKind = "tasks" | "ahp" | "performance";
+type PickKind = "tasks" | "ahp" | "performance" | "peer";
 const teamPickOpen = ref(false);
 const pickKind = ref<PickKind | null>(null);
 const pickTeamId = ref<number | undefined>(undefined);
@@ -143,6 +228,7 @@ const teamPickTitle = computed(() => {
     tasks: "选择团队 — 团队任务",
     ahp: "选择团队 — AHP 权重",
     performance: "选择团队 — 绩效周期",
+    peer: "选择团队 — 同事互评",
   };
   return pickKind.value ? m[pickKind.value] : "选择团队";
 });
@@ -155,8 +241,17 @@ async function loadTeamsForPick() {
   teamPickLoaded.value = false;
   teamPickOptions.value = [];
   const r = roleDisplay.value;
+  const kind = pickKind.value;
   try {
-    if (r === "ADMIN") {
+    if (kind === "peer") {
+      const { data } = await client.get<{ id: number; name: string }[]>(
+        "/performance/peer-review/eligible-teams",
+      );
+      teamPickOptions.value = (data ?? []).map((t) => ({
+        value: t.id,
+        label: `${t.name}（#${t.id}）`,
+      }));
+    } else if (r === "ADMIN") {
       const { data } =
         await client.get<{ id: number; name: string }[]>("/admin/teams");
       teamPickOptions.value = data.map((t) => ({
@@ -197,7 +292,7 @@ function confirmTeamPick() {
   const k = pickKind.value;
   if (k === "tasks") router.push(`/tasks/${id}`);
   else if (k === "ahp") router.push(`/ahp/${id}`);
-  else if (k === "performance") router.push(`/performance/${id}`);
+  else if (k === "performance" || k === "peer") router.push(`/performance/${id}`);
   teamPickOpen.value = false;
   pickKind.value = null;
 }
@@ -220,15 +315,33 @@ function onMessagesUpdated() {
   fetchUnread();
 }
 
+async function refreshPeerReviewMenu() {
+  if (roleDisplay.value !== "MEMBER") {
+    peerReviewEligibleTeams.value = [];
+    return;
+  }
+  try {
+    const { data } = await client.get<{ id: number; name: string }[]>(
+      "/performance/peer-review/eligible-teams",
+    );
+    peerReviewEligibleTeams.value = data ?? [];
+  } catch {
+    peerReviewEligibleTeams.value = [];
+  }
+}
+
 watch(
   () => route.path,
   (p) => {
     if (p.startsWith("/admin")) selectedKeys.value = [p];
     else if (p.startsWith("/tasks/")) selectedKeys.value = ["/tasks-link"];
     else if (p.startsWith("/ahp/")) selectedKeys.value = ["/ahp-link"];
-    else if (p.startsWith("/performance/")) selectedKeys.value = ["/perf-link"];
-    else selectedKeys.value = [p === "/" ? "/dashboard" : p];
+    else if (p.startsWith("/performance/")) {
+      const rl = localStorage.getItem("role") || "MEMBER";
+      selectedKeys.value = rl === "MEMBER" ? ["/peer-review-link"] : ["/perf-link"];
+    } else selectedKeys.value = [p === "/" ? "/dashboard" : p];
     fetchUnread();
+    refreshPeerReviewMenu();
   },
   { immediate: true },
 );
@@ -237,6 +350,7 @@ onMounted(() => {
   fetchUnread();
   msgPoll = setInterval(fetchUnread, 60000);
   window.addEventListener("messages-updated", onMessagesUpdated);
+  refreshPeerReviewMenu();
 });
 
 onUnmounted(() => {
@@ -256,6 +370,10 @@ function onMenuClick({ key }: { key: string | number }) {
   }
   if (k === "/perf-link") {
     openTeamPick("performance");
+    return;
+  }
+  if (k === "/peer-review-link") {
+    openTeamPick("peer");
     return;
   }
   router.push(k);
@@ -282,10 +400,11 @@ function logout() {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: #f0f2f5;
 }
 .logo {
   height: 48px;
-  margin: 12px;
+  margin: 8px 12px 10px;
   color: #fff;
   font-weight: 700;
   display: flex;
@@ -293,12 +412,123 @@ function logout() {
   justify-content: center;
 }
 .header {
+  position: relative;
+  flex-shrink: 0;
+  height: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+.header-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 42% 160% at 8% 50%, rgba(22, 119, 255, 0.07), transparent 58%),
+    radial-gradient(ellipse 38% 140% at 92% 50%, rgba(22, 119, 255, 0.05), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.035) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 16px 16px;
+  opacity: 0.9;
+}
+.header-left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.header-mark-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  flex-shrink: 0;
+  border-radius: 8px;
+  outline: none;
+}
+.header-mark-link:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1677ff;
+}
+.header-mark-link:hover .header-mark {
+  filter: brightness(1.06);
+}
+.header-breadcrumb-wrap {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+.header-breadcrumb {
+  width: 100%;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.header-breadcrumb :deep(.ant-breadcrumb) {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: hidden;
+}
+.header-breadcrumb :deep(.ant-breadcrumb-separator) {
+  margin: 0 6px;
+  color: rgba(0, 0, 0, 0.25);
+}
+.header-breadcrumb :deep(.ant-breadcrumb-link),
+.header-breadcrumb :deep(span:not(.ant-breadcrumb-separator)) {
+  color: rgba(0, 0, 0, 0.65);
+}
+.header-breadcrumb :deep(.ant-breadcrumb-link:hover) {
+  color: #1677ff;
+}
+.header-breadcrumb :deep(li:last-child .ant-breadcrumb-link),
+.header-breadcrumb :deep(li:last-child span) {
+  color: rgba(0, 0, 0, 0.88);
+  font-weight: 500;
+}
+.header-breadcrumb :deep(li) {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-mark {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(22, 119, 255, 0.35);
+}
+.header-right {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 24px;
-  background: #fff;
 }
 .msg-bell {
   display: inline-flex;
@@ -310,8 +540,40 @@ function logout() {
 .content.app-content-scroll {
   flex: 1;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
-  margin: 16px;
+  padding: 8px 16px 16px;
+  margin: 0;
+  /* 顶部淡蓝光晕 + 工程网格 + 细点阵，填充灰底空白且不抢内容 */
+  background-color: #f0f2f5;
+  background-image:
+    radial-gradient(ellipse 120% 75% at 50% -15%, rgba(22, 119, 255, 0.09), transparent 58%),
+    linear-gradient(rgba(0, 0, 0, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.024) 1px, transparent 1px),
+    radial-gradient(circle at 50% 1px, rgba(0, 0, 0, 0.035) 1px, transparent 1.2px);
+  background-size:
+    100% 100%,
+    44px 44px,
+    44px 44px,
+    22px 22px;
+  background-repeat: no-repeat, repeat, repeat, repeat;
+}
+
+/* 主内容区内卡片：减轻顶栏与标题区之间的空白感 */
+.content.app-content-scroll :deep(.ant-card-head) {
+  min-height: 48px;
+  padding: 0 16px;
+}
+.content.app-content-scroll :deep(.ant-card-head-title) {
+  padding: 10px 0;
+  font-size: 16px;
+}
+.content.app-content-scroll :deep(.ant-card-body) {
+  padding: 16px;
+}
+.content.app-content-scroll :deep(.ant-card-type-inner .ant-card-body) {
+  padding: 12px 16px;
 }
 .pick-hint {
   margin: 12px 0 0;

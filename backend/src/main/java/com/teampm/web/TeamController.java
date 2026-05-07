@@ -95,6 +95,11 @@ public class TeamController {
         return teamService.listAssignableUsers(id, SecurityUtils.requireUser());
     }
 
+    @GetMapping("/{id}/peer-review-targets")
+    public List<AssignableUserDto> peerReviewTargets(@PathVariable Long id) {
+        return teamService.listPeerReviewTargets(id, SecurityUtils.requireUser());
+    }
+
     @PostMapping("/{id}/members/{memberId}/approve")
     public void approve(@PathVariable Long id, @PathVariable Long memberId, @AuthenticationPrincipal UserPrincipal p) {
         teamService.approveMember(memberId, SecurityUtils.requireUser());

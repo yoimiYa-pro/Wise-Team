@@ -6,6 +6,7 @@ import com.teampm.algo.FuzzyComprehensiveEvaluation;
 import com.teampm.domain.PerformanceCycle;
 import com.teampm.domain.PerformanceReport;
 import com.teampm.domain.PeerReview;
+import com.teampm.domain.Team;
 import com.teampm.domain.Task;
 import com.teampm.domain.User;
 import com.teampm.exception.ApiException;
@@ -23,14 +24,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class PerformanceService {
+
+    /**
+     * 周期内无「截止日在周期内且状态为已完成/已归档」的任务时，系统维度采用的偏低隶属度（优秀→不合格）。
+     * 与「有任务但延期严重」的最低档相比，不合格档更高，以体现无任务交付。
+     */
+    private static final double[] SYSTEM_ROW_NO_PERIOD_TASKS = {0.01, 0.04, 0.30, 0.65};
 
     private final PerformanceCycleMapper performanceCycleMapper;
     private final PerformanceReportMapper performanceReportMapper;
@@ -47,6 +55,45 @@ public class PerformanceService {
         var team = teamService.requireTeam(teamId);
         teamService.assertManager(actor, team);
         return performanceCycleMapper.findByTeamId(teamId);
+    }
+
+    /** 当前日期落在区间内且未关闭的周期，供成员互评页拉取 */
+    public List<PerformanceCycle> peerReviewEligibleCycles(Long teamId, UserPrincipal actor) {
+        teamService.assertMemberApproved(actor, teamId);
+        LocalDate today = LocalDate.now();
+        List<PerformanceCycle> out = new ArrayList<>();
+        for (PerformanceCycle c : performanceCycleMapper.findByTeamId(teamId)) {
+            if (isPeerReviewWindowOpen(c, today)) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    /** 侧边栏「同事互评」入口：成员所属团队中至少有一个处于互评开放窗口的团队 */
+    public List<Team> teamsWithPeerReviewWindow(UserPrincipal actor) {
+        if ("ADMIN".equals(actor.getRole())) {
+            return List.of();
+        }
+        LocalDate today = LocalDate.now();
+        List<Team> teams = teamService.listForMember(actor.getId());
+        List<Team> out = new ArrayList<>();
+        for (Team t : teams) {
+            for (PerformanceCycle c : performanceCycleMapper.findByTeamId(t.getId())) {
+                if (isPeerReviewWindowOpen(c, today)) {
+                    out.add(t);
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    private static boolean isPeerReviewWindowOpen(PerformanceCycle c, LocalDate today) {
+        if (c.getClosedFlag() != null && c.getClosedFlag() == 1) {
+            return false;
+        }
+        return !today.isBefore(c.getPeriodStart()) && !today.isAfter(c.getPeriodEnd());
     }
 
     @Transactional
@@ -70,6 +117,10 @@ public class PerformanceService {
         PerformanceCycle c = performanceCycleMapper.findById(cycleId);
         if (c == null || !c.getTeamId().equals(teamId) || c.getClosedFlag() != null && c.getClosedFlag() == 1) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "绩效周期无效或已关闭");
+        }
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(c.getPeriodStart()) || today.isAfter(c.getPeriodEnd())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "当前不在该绩效周期的互评开放时间内");
         }
         if (targetUserId.equals(actor.getId())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "不能评价自己");
@@ -113,7 +164,8 @@ public class PerformanceService {
         List<Long> members = teamMemberMapper.findApprovedUserIds(c.getTeamId());
         for (Long uid : members) {
             double[] mgr = normalizeFour(managerRows != null ? managerRows.get(uid) : null);
-            double[] sys = systemRow(uid, c);
+            PeriodTaskStats pts = aggregatePeriodTasks(uid, c);
+            double[] sys = systemRowFromStats(pts);
             double[] peer = peerRow(c.getId(), uid);
             double[][] r = new double[][]{mgr, sys, peer};
             double score = FuzzyComprehensiveEvaluation.score(r, w);
@@ -122,12 +174,18 @@ public class PerformanceService {
             rep.setUserId(uid);
             rep.setScore(BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP));
             try {
-                rep.setDetailJson(objectMapper.writeValueAsString(Map.of(
-                        "manager", mgr,
-                        "system", sys,
-                        "peer", peer,
-                        "weights", w
-                )));
+                Map<String, Object> detail = new LinkedHashMap<>();
+                detail.put("manager", mgr);
+                detail.put("system", sys);
+                detail.put("peer", peer);
+                detail.put("weights", w);
+                if (pts.eligibleCompleted == 0) {
+                    detail.put("systemNoTaskDefault", true);
+                    detail.put(
+                            "systemDefaultNote",
+                            "无任务：周期内无截止且已完成（或已归档）的任务可供统计，系统维度采用无任务缺省偏低配置。");
+                }
+                rep.setDetailJson(objectMapper.writeValueAsString(detail));
             } catch (JsonProcessingException e) {
                 rep.setDetailJson("{}");
             }
@@ -177,7 +235,19 @@ public class PerformanceService {
         return d;
     }
 
-    private double[] systemRow(Long userId, PerformanceCycle c) {
+    private static final class PeriodTaskStats {
+        /** 周期内截止且已完成/已归档、用于计算达成率的任务数 */
+        final int eligibleCompleted;
+        /** 上述任务中在截止日期前（含当天）完成更新的数量 */
+        final int onTime;
+
+        PeriodTaskStats(int eligibleCompleted, int onTime) {
+            this.eligibleCompleted = eligibleCompleted;
+            this.onTime = onTime;
+        }
+    }
+
+    private PeriodTaskStats aggregatePeriodTasks(Long userId, PerformanceCycle c) {
         List<Task> tasks = taskMapper.findByAssigneeId(userId);
         int total = 0;
         int ok = 0;
@@ -201,7 +271,14 @@ public class PerformanceService {
                 ok++;
             }
         }
-        double ratio = total == 0 ? 0.75 : (double) ok / total;
+        return new PeriodTaskStats(total, ok);
+    }
+
+    private double[] systemRowFromStats(PeriodTaskStats st) {
+        if (st.eligibleCompleted == 0) {
+            return SYSTEM_ROW_NO_PERIOD_TASKS.clone();
+        }
+        double ratio = (double) st.onTime / st.eligibleCompleted;
         if (ratio >= 0.9) {
             return new double[]{0.55, 0.35, 0.08, 0.02};
         }
