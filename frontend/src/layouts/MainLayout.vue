@@ -1,11 +1,23 @@
 <template>
   <a-layout class="app-root-layout">
     <a-layout-sider
+      v-model:collapsed="siderCollapsed"
       class="app-sider"
       breakpoint="lg"
-      :collapsed-width="64"
+      :collapsed-width="72"
+      :width="220"
+      collapsible
     >
-      <div class="logo">任务管理与绩效评估系统</div>
+      <div class="sider-head">
+        <div
+          class="logo"
+          :class="{ 'logo--collapsed': siderCollapsed }"
+          :title="collapsedLogoTitle"
+        >
+          {{ siderCollapsed ? "WT" : "融合智能决策的任务管理与绩效评估系统" }}
+        </div>
+        <div class="sider-head-divider" aria-hidden="true" />
+      </div>
       <a-menu
         v-model:selectedKeys="selectedKeys"
         theme="dark"
@@ -24,13 +36,23 @@
       <a-layout-header class="header">
         <div class="header-bg" aria-hidden="true" />
         <div class="header-left">
-          <router-link to="/" class="header-mark-link" title="任务管理与绩效评估系统 · 返回首页">
+          <router-link
+            to="/"
+            class="header-mark-link"
+            title="任务管理与绩效评估系统 · 返回首页"
+          >
             <span class="header-mark">WT</span>
           </router-link>
           <nav class="header-breadcrumb-wrap" aria-label="面包屑">
             <a-breadcrumb class="header-breadcrumb" separator="/">
-              <a-breadcrumb-item v-for="(item, idx) in breadcrumbItems" :key="`${idx}-${item.title}`">
-                <router-link v-if="item.to != null && idx < breadcrumbItems.length - 1" :to="item.to">
+              <a-breadcrumb-item
+                v-for="(item, idx) in breadcrumbItems"
+                :key="`${idx}-${item.title}`"
+              >
+                <router-link
+                  v-if="item.to != null && idx < breadcrumbItems.length - 1"
+                  :to="item.to"
+                >
                   {{ item.title }}
                 </router-link>
                 <span v-else>{{ item.title }}</span>
@@ -53,6 +75,7 @@
         </div>
       </a-layout-header>
       <a-layout-content class="content app-content-scroll">
+        <h1 class="page-sr-title">{{ pageHeading }}</h1>
         <router-view />
       </a-layout-content>
     </a-layout>
@@ -102,6 +125,14 @@ import {
 
 const router = useRouter();
 const route = useRoute();
+
+const SIDER_COLLAPSED_KEY = "layoutSiderCollapsed";
+const siderCollapsed = ref(localStorage.getItem(SIDER_COLLAPSED_KEY) === "1");
+const collapsedLogoTitle = "任务管理与绩效评估系统";
+
+watch(siderCollapsed, (v) => {
+  localStorage.setItem(SIDER_COLLAPSED_KEY, v ? "1" : "0");
+});
 
 type BreadcrumbItem = { title: string; to?: string };
 
@@ -157,6 +188,13 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 
   items.push({ title: "当前页" });
   return items;
+});
+
+/** 与面包屑末级一致，供读屏 h1（主内容区不再重复视觉标题） */
+const pageHeading = computed(() => {
+  const items = breadcrumbItems.value;
+  const last = items[items.length - 1];
+  return last?.title ?? "当前页";
 });
 
 const roleDisplay = computed(() => localStorage.getItem("role") || "MEMBER");
@@ -292,7 +330,8 @@ function confirmTeamPick() {
   const k = pickKind.value;
   if (k === "tasks") router.push(`/tasks/${id}`);
   else if (k === "ahp") router.push(`/ahp/${id}`);
-  else if (k === "performance" || k === "peer") router.push(`/performance/${id}`);
+  else if (k === "performance" || k === "peer")
+    router.push(`/performance/${id}`);
   teamPickOpen.value = false;
   pickKind.value = null;
 }
@@ -338,7 +377,8 @@ watch(
     else if (p.startsWith("/ahp/")) selectedKeys.value = ["/ahp-link"];
     else if (p.startsWith("/performance/")) {
       const rl = localStorage.getItem("role") || "MEMBER";
-      selectedKeys.value = rl === "MEMBER" ? ["/peer-review-link"] : ["/perf-link"];
+      selectedKeys.value =
+        rl === "MEMBER" ? ["/peer-review-link"] : ["/perf-link"];
     } else selectedKeys.value = [p === "/" ? "/dashboard" : p];
     fetchUnread();
     refreshPeerReviewMenu();
@@ -389,6 +429,10 @@ function logout() {
 .app-root-layout {
   height: 100vh;
   overflow: hidden;
+  /* 侧栏标题区与右侧顶栏同高，底边与顶栏下边框对齐 */
+  --layout-header-height: 56px;
+  /* 侧栏系统名与面包屑字号统一 */
+  --layout-header-text-size: 17px;
 }
 .app-sider {
   height: 100vh;
@@ -402,20 +446,50 @@ function logout() {
   flex-direction: column;
   background: #f0f2f5;
 }
+.sider-head {
+  flex-shrink: 0;
+  height: var(--layout-header-height);
+  min-height: var(--layout-header-height);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
 .logo {
-  height: 48px;
-  margin: 8px 12px 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 16px;
+  padding: 6px 4px 4px;
   color: #fff;
+  font-family: "STKaiti", "KaiTi", "Kaiti SC", "楷体", "SimKai", serif;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  line-height: 1.45;
+  font-size: var(--layout-header-text-size);
+}
+.logo--collapsed {
+  font-size: var(--layout-header-text-size);
+  letter-spacing: 0.04em;
+}
+
+/* 与主内容区左右留白一致（.content 横向 16px）；贴齐 sider-head 底边，与右侧 .header 底边同一水平线 */
+.sider-head-divider {
+  flex-shrink: 0;
+  height: 2px;
+  margin: 0 16px;
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
 }
 .header {
   position: relative;
   flex-shrink: 0;
-  height: 48px;
-  min-height: 48px;
+  height: var(--layout-header-height);
+  min-height: var(--layout-header-height);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -432,10 +506,21 @@ function logout() {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(ellipse 42% 160% at 8% 50%, rgba(22, 119, 255, 0.07), transparent 58%),
-    radial-gradient(ellipse 38% 140% at 92% 50%, rgba(22, 119, 255, 0.05), transparent 55%),
+    radial-gradient(
+      ellipse 42% 160% at 8% 50%,
+      rgba(22, 119, 255, 0.07),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 38% 140% at 92% 50%,
+      rgba(22, 119, 255, 0.05),
+      transparent 55%
+    ),
     radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.035) 1px, transparent 0);
-  background-size: 100% 100%, 100% 100%, 16px 16px;
+  background-size:
+    100% 100%,
+    100% 100%,
+    16px 16px;
   opacity: 0.9;
 }
 .header-left {
@@ -458,7 +543,9 @@ function logout() {
   outline: none;
 }
 .header-mark-link:focus-visible {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1677ff;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px #1677ff;
 }
 .header-mark-link:hover .header-mark {
   filter: brightness(1.06);
@@ -475,14 +562,25 @@ function logout() {
 .header-breadcrumb {
   width: 100%;
   min-width: 0;
-  font-size: 13px;
-  line-height: 1.35;
+  font-family:
+    "SimHei", "Heiti SC", "STHeiti", "PingFang SC", "Microsoft YaHei UI",
+    "黑体", "Noto Sans CJK SC", sans-serif;
+  font-size: var(--layout-header-text-size);
+  line-height: 1.45;
 }
 .header-breadcrumb :deep(.ant-breadcrumb) {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   overflow: hidden;
+  font-family: inherit;
+  font-size: inherit;
+}
+.header-breadcrumb :deep(.ant-breadcrumb-link),
+.header-breadcrumb :deep(.ant-breadcrumb-separator),
+.header-breadcrumb :deep(li span) {
+  font-family: inherit;
+  font-size: inherit;
 }
 .header-breadcrumb :deep(.ant-breadcrumb-separator) {
   margin: 0 6px;
@@ -548,10 +646,18 @@ function logout() {
   /* 顶部淡蓝光晕 + 工程网格 + 细点阵，填充灰底空白且不抢内容 */
   background-color: #f0f2f5;
   background-image:
-    radial-gradient(ellipse 120% 75% at 50% -15%, rgba(22, 119, 255, 0.09), transparent 58%),
+    radial-gradient(
+      ellipse 120% 75% at 50% -15%,
+      rgba(22, 119, 255, 0.09),
+      transparent 58%
+    ),
     linear-gradient(rgba(0, 0, 0, 0.024) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.024) 1px, transparent 1px),
-    radial-gradient(circle at 50% 1px, rgba(0, 0, 0, 0.035) 1px, transparent 1.2px);
+    radial-gradient(
+      circle at 50% 1px,
+      rgba(0, 0, 0, 0.035) 1px,
+      transparent 1.2px
+    );
   background-size:
     100% 100%,
     44px 44px,
@@ -579,5 +685,17 @@ function logout() {
   margin: 12px 0 0;
   color: rgba(0, 0, 0, 0.45);
   font-size: 13px;
+}
+
+.page-sr-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>

@@ -1,13 +1,13 @@
 package com.teampm.service;
 
 import com.teampm.domain.InAppMessage;
+import com.teampm.dto.MessagePageResponse;
 import com.teampm.mapper.InAppMessageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +37,17 @@ public class InAppMessageService {
         }
     }
 
-    public List<InAppMessage> list(Long userId, int limit) {
-        return inAppMessageMapper.findByUserId(userId, limit);
+    public MessagePageResponse pageList(Long userId, String keyword, int page, int pageSize) {
+        int p = Math.max(page, 1);
+        int size = Math.min(Math.max(pageSize, 1), 50);
+        String kw = keyword == null ? null : keyword.trim();
+        if (kw != null && kw.isEmpty()) {
+            kw = null;
+        }
+        long total = inAppMessageMapper.countPage(userId, kw);
+        int offset = (p - 1) * size;
+        var items = inAppMessageMapper.findPage(userId, kw, offset, size);
+        return new MessagePageResponse(items, total);
     }
 
     public int unreadCount(Long userId) {
@@ -61,5 +70,10 @@ public class InAppMessageService {
             return null;
         }
         return m;
+    }
+
+    @Transactional
+    public boolean deleteOwned(Long id, Long userId) {
+        return inAppMessageMapper.deleteByIdAndUserId(id, userId) > 0;
     }
 }

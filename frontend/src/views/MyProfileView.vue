@@ -1,6 +1,6 @@
 <template>
   <a-space direction="vertical" style="width: 100%" size="large">
-    <a-card title="个人信息">
+    <a-card>
       <a-spin :spinning="loading">
         <a-alert
           v-if="pendingRequest"

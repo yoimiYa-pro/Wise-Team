@@ -14,6 +14,13 @@ public interface UserMapper {
 
     List<User> findAll();
 
+    long countForAdminList(@Param("keyword") String keyword);
+
+    List<User> findPageForAdminList(
+            @Param("keyword") String keyword,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+
     int insert(User user);
 
     int update(User user);

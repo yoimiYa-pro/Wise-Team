@@ -47,7 +47,7 @@ public class PerformanceService {
     private final TeamService teamService;
     private final TaskMapper taskMapper;
     private final UserMapper userMapper;
-    private final SystemConfigService systemConfigService;
+    private final GlobalFceAhpService globalFceAhpService;
     private final ObjectMapper objectMapper;
     private final AuditService auditService;
 
@@ -152,9 +152,10 @@ public class PerformanceService {
         if (c.getClosedFlag() != null && c.getClosedFlag() == 1) {
             throw new ApiException(HttpStatus.CONFLICT, "周期已关闭");
         }
-        double wm = parseW("fce.weights.manager", 0.4);
-        double ws = parseW("fce.weights.system", 0.35);
-        double wp = parseW("fce.weights.peer", 0.25);
+        double[] rawW = globalFceAhpService.fceWeightsOrFallback();
+        double wm = rawW[0];
+        double ws = rawW[1];
+        double wp = rawW[2];
         double sum = wm + ws + wp;
         wm /= sum;
         ws /= sum;
@@ -201,18 +202,6 @@ public class PerformanceService {
         }
         performanceCycleMapper.closeCycle(cycleId);
         auditService.log(actor.getId(), "PERF_CYCLE_CLOSE", "PerformanceCycle", cycleId, null);
-    }
-
-    private double parseW(String key, double def) {
-        String v = systemConfigService.get(key);
-        if (v == null) {
-            return def;
-        }
-        try {
-            return Double.parseDouble(v);
-        } catch (NumberFormatException e) {
-            return def;
-        }
     }
 
     private static double[] normalizeFour(List<Double> row) {

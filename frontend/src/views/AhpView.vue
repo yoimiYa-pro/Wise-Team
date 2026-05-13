@@ -1,5 +1,5 @@
 <template>
-  <a-card :title="`团队 ${tid} — AHP 权重（行/列：技能匹配、负载、绩效）`">
+  <a-card>
     <a-typography-paragraph type="secondary">
       使用 1–9 标度填写两两比较矩阵，保存前会进行一致性检验（CR &lt; 0.1）。
     </a-typography-paragraph>
@@ -22,6 +22,7 @@
         </a-space>
         <a-space>
           <a-button html-type="submit">预览</a-button>
+          <a-button type="primary" ghost @click="onSaveCurrent">保存当前矩阵</a-button>
           <a-button type="primary" @click="onSaveDefault">使用示例矩阵保存</a-button>
         </a-space>
       </a-space>
@@ -175,16 +176,36 @@ watch(tid, () => {
   void loadSavedAhp();
 });
 
-async function onPreview() {
+function buildMatrixFromMform(): number[][] {
   const v = mform;
-  const matrix = [
+  return [
     [1, v.a12, v.a13],
     [1 / v.a12, 1, v.a23],
     [1 / v.a13, 1 / v.a23, 1],
   ];
+}
+
+async function onPreview() {
+  const matrix = buildMatrixFromMform();
   const { data } = await client.post(`/teams/${tid.value}/ahp/preview`, { matrix });
   preview.value = data;
   message.info(data.consistent ? "一致性通过" : "一致性未通过");
+}
+
+/** 将当前输入框中的两两比值构造成矩阵并保存；须先通过一致性检验（会先请求预览校验）。 */
+async function onSaveCurrent() {
+  const id = tid.value;
+  if (!id || Number.isNaN(id)) return;
+  const matrix = buildMatrixFromMform();
+  const { data } = await client.post(`/teams/${id}/ahp/preview`, { matrix });
+  preview.value = data;
+  if (!data.consistent) {
+    message.warning("一致性未通过，无法保存，请调整比值后先预览");
+    return;
+  }
+  await client.post(`/teams/${id}/ahp`, { matrix });
+  message.success("已保存权重");
+  savedLoadedFromServer.value = true;
 }
 
 async function onSaveDefault() {

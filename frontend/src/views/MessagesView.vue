@@ -1,7 +1,14 @@
 <template>
   <a-space direction="vertical" style="width: 100%" size="large">
-    <a-card title="消息中心">
-      <a-space style="margin-bottom: 12px">
+    <a-card>
+      <a-space style="margin-bottom: 12px" wrap>
+        <a-input-search
+          v-model:value="msgKeyword"
+          placeholder="搜索标题或正文"
+          allow-clear
+          style="width: 260px"
+          @search="onMessageSearch"
+        />
         <a-button type="primary" ghost @click="loadMessages">刷新</a-button>
         <a-button @click="onReadAll">全部标为已读</a-button>
       </a-space>
@@ -16,11 +23,28 @@
             <template #actions>
               <span class="muted">{{ formatTime(item.createdAt) }}</span>
               <a-tag v-if="item.readFlag === 0" color="blue">未读</a-tag>
+              <a-popconfirm title="确定删除该条消息？" @confirm="() => onDeleteMessage(item)">
+                <a-button type="link" danger size="small" @click.stop>
+                  <template #icon><DeleteOutlined /></template>
+                </a-button>
+              </a-popconfirm>
             </template>
           </a-list-item>
         </template>
         <template #empty><a-empty description="暂无消息" /></template>
       </a-list>
+      <div v-if="msgTotal > 0" class="msg-pagination-wrap">
+        <a-pagination
+          v-model:current="msgPage"
+          v-model:page-size="msgPageSize"
+          :total="msgTotal"
+          :show-size-changer="true"
+          :page-size-options="['10', '20', '50']"
+          size="small"
+          show-less-items
+          @change="onMsgPaginationChange"
+        />
+      </div>
     </a-card>
 
     <a-card v-if="isAdmin" title="待审批 — 个人信息变更">
@@ -162,6 +186,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { message } from "ant-design-vue";
+import { DeleteOutlined } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import client from "../api/client";
 
@@ -171,6 +196,11 @@ type Msg = {
   body?: string;
   readFlag: number;
   createdAt?: string;
+};
+
+type MessagePageResp = {
+  items: Msg[];
+  total: number;
 };
 
 type PendingRow = {
@@ -209,6 +239,10 @@ const canApprove = computed(() => role.value === "ADMIN" || role.value === "MANA
 
 const messages = ref<Msg[]>([]);
 const msgLoading = ref(false);
+const msgKeyword = ref("");
+const msgPage = ref(1);
+const msgPageSize = ref(10);
+const msgTotal = ref(0);
 const pending = ref<PendingRow[]>([]);
 const pendLoading = ref(false);
 
@@ -248,15 +282,47 @@ const profileRejectComment = ref("");
 const profileDetailOpen = ref(false);
 const activeProfileDetail = ref<ProfilePendingRow | null>(null);
 
+function onMessageSearch() {
+  msgPage.value = 1;
+  loadMessages();
+}
+
+function onMsgPaginationChange(page: number, pageSize: number) {
+  msgPage.value = page;
+  msgPageSize.value = pageSize;
+  loadMessages();
+}
+
 async function loadMessages() {
   msgLoading.value = true;
   try {
-    const { data } = await client.get<Msg[]>("/messages");
-    messages.value = data;
+    const { data } = await client.get<MessagePageResp>("/messages", {
+      params: {
+        page: msgPage.value,
+        pageSize: msgPageSize.value,
+        keyword: msgKeyword.value?.trim() || undefined,
+      },
+    });
+    messages.value = data.items ?? [];
+    msgTotal.value = data.total ?? 0;
   } catch {
     message.error("加载消息失败");
   } finally {
     msgLoading.value = false;
+  }
+}
+
+async function onDeleteMessage(item: Msg) {
+  try {
+    await client.delete(`/messages/${item.id}`);
+    message.success("已删除");
+    if (messages.value.length <= 1 && msgPage.value > 1) {
+      msgPage.value -= 1;
+    }
+    await loadMessages();
+    window.dispatchEvent(new Event("messages-updated"));
+  } catch {
+    message.error("删除失败");
   }
 }
 
@@ -320,9 +386,9 @@ async function onClickMessage(item: Msg) {
 async function onReadAll() {
   try {
     await client.post("/messages/read-all");
-    messages.value.forEach((m) => (m.readFlag = 1));
-    window.dispatchEvent(new Event("messages-updated"));
     message.success("已全部标为已读");
+    await loadMessages();
+    window.dispatchEvent(new Event("messages-updated"));
   } catch {
     message.error("操作失败");
   }
@@ -444,6 +510,11 @@ onMounted(() => {
 .muted {
   color: rgba(0, 0, 0, 0.45);
   font-size: 12px;
+}
+
+.msg-pagination-wrap {
+  margin-top: 16px;
+  text-align: right;
 }
 
 .ellipsis-cell {

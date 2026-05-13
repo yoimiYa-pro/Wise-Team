@@ -1,6 +1,6 @@
 <template>
   <div v-if="!allowed"></div>
-  <a-card v-else :title="isMember ? '我的团队' : '团队管理'">
+  <a-card v-else>
     <a-space direction="vertical" style="width: 100%" size="middle">
       <a-typography-text v-if="isMember" type="secondary">
         每个账号仅可隶属于一个团队。以下为当前所属团队，仅可查看信息与进入团队任务；AHP、绩效配置等需团队管理者操作。
@@ -35,7 +35,7 @@
         :data-source="teams"
         :columns="tableColumns"
         :loading="loading"
-        :pagination="false"
+        :pagination="teamsTablePagination"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'actions'">
@@ -87,7 +87,7 @@
           <a-select
             v-model:value="createForm.managerId"
             show-search
-            placeholder="选择用户作为管理者"
+            placeholder="选择管理员或管理者角色用户"
             :options="managerOptions"
             :filter-option="filterUserOption"
             style="width: 100%"
@@ -154,7 +154,7 @@
           :row-key="(r: MemberRow) => r.id"
           :data-source="membersList"
           :columns="memberColumns"
-          :pagination="false"
+          :pagination="membersTablePagination"
           size="small"
         >
           <template #bodyCell="{ column, record }">
@@ -254,7 +254,7 @@ const joinSaving = ref(false);
 
 const managerOptions = computed(() =>
   allUsers.value
-    .filter((u) => u.status !== 0)
+    .filter((u) => u.status !== 0 && (u.role === "ADMIN" || u.role === "MANAGER"))
     .map((u) => ({
       value: u.id,
       label: `${u.username}${u.displayName ? `（${u.displayName}）` : ""} · ${u.role}`,
@@ -269,6 +269,20 @@ const tableColumns = computed(() => [
   { title: "状态", dataIndex: "status", width: 100 },
   { title: "快捷入口", key: "actions", width: isMember.value ? 140 : 380 },
 ]);
+
+const teamsTablePagination = computed(() => ({
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ["10", "20", "50"],
+  showTotal: (t: number) => `共 ${t} 个团队`,
+}));
+
+const membersTablePagination = computed(() => ({
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ["10", "20", "50"],
+  showTotal: (t: number) => `共 ${t} 人`,
+}));
 
 type MemberRow = {
   id: number;

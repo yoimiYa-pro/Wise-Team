@@ -1,6 +1,7 @@
 package com.teampm.web;
 
 import com.teampm.domain.User;
+import com.teampm.dto.UserPageResponse;
 import com.teampm.security.SecurityUtils;
 import com.teampm.service.UserAdminService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,6 +27,14 @@ import java.util.List;
 public class AdminUserController {
 
     private final UserAdminService userAdminService;
+
+    @GetMapping(params = {"page", "pageSize"})
+    public UserPageResponse listPaged(
+            @RequestParam int page,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String keyword) {
+        return userAdminService.listPage(keyword, page, pageSize);
+    }
 
     @GetMapping
     public List<User> list() {

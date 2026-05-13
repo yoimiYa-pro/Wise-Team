@@ -1,6 +1,5 @@
 <template>
   <a-space direction="vertical" size="middle" style="width: 100%">
-    <a-typography-title :level="4" style="margin: 0">管理者看板</a-typography-title>
     <a-select
       v-model:value="teamId"
       style="width: 280px"

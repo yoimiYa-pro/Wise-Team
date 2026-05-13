@@ -1,11 +1,11 @@
 <template>
-  <a-card title="我的任务">
+  <a-card>
     <a-space direction="vertical" style="width: 100%">
       <a-table
         :row-key="(r: TaskRow) => r.id"
         :data-source="tasks"
         :columns="columns"
-        :pagination="false"
+        :pagination="tasksTablePagination"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'risk'">
@@ -318,6 +318,13 @@ const columns = [
   { title: "进度", key: "progress" },
   { title: "状态申请", key: "statusReq", width: 100 },
 ];
+
+const tasksTablePagination = computed(() => ({
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ["10", "20", "50"],
+  showTotal: (t: number) => `共 ${t} 条任务`,
+}));
 
 async function load() {
   try {

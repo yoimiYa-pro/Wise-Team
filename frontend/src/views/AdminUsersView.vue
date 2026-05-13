@@ -1,13 +1,24 @@
 <template>
   <div v-if="role !== 'ADMIN'"></div>
-  <a-card v-else title="用户管理">
-    <a-button type="primary" @click="openCreate">新建用户</a-button>
+  <a-card v-else>
+    <a-space wrap>
+      <a-button type="primary" @click="openCreate">新建用户</a-button>
+      <a-input-search
+        v-model:value="keyword"
+        placeholder="搜索用户名或显示名"
+        allow-clear
+        style="width: 280px"
+        @search="runSearch"
+      />
+    </a-space>
     <a-table
       style="margin-top: 16px"
       :row-key="(r: UserRow) => r.id"
       :data-source="users"
       :columns="columns"
-      :pagination="false"
+      :loading="listLoading"
+      :pagination="tablePagination"
+      @change="onTableChange"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'status'">
@@ -47,8 +58,13 @@
         <a-form-item name="displayName" label="显示名">
           <a-input v-model:value="createForm.displayName" />
         </a-form-item>
-        <a-form-item name="role" label="角色" :rules="[{ required: true }]">
-          <a-input v-model:value="createForm.role" placeholder="ADMIN / MANAGER / MEMBER" />
+        <a-form-item name="role" label="角色" :rules="[{ required: true, message: '请选择角色' }]">
+          <a-select
+            v-model:value="createForm.role"
+            placeholder="请选择角色"
+            :options="userRoleOptions"
+            style="width: 100%"
+          />
         </a-form-item>
         <a-form-item label="技能与熟练度">
           <SkillPickerRows v-model:rows="skillRows" :catalog="catalog" />
@@ -75,8 +91,13 @@
         <a-form-item name="displayName" label="显示名">
           <a-input v-model:value="editForm.displayName" />
         </a-form-item>
-        <a-form-item name="role" label="角色" :rules="[{ required: true, message: '请填写角色' }]">
-          <a-input v-model:value="editForm.role" placeholder="ADMIN / MANAGER / MEMBER" />
+        <a-form-item name="role" label="角色" :rules="[{ required: true, message: '请选择角色' }]">
+          <a-select
+            v-model:value="editForm.role"
+            placeholder="请选择角色"
+            :options="userRoleOptions"
+            style="width: 100%"
+          />
         </a-form-item>
         <a-form-item label="账号状态">
           <a-radio-group v-model:value="editForm.status">
@@ -105,7 +126,8 @@
 
 <script setup lang="ts">
 import { Modal } from "ant-design-vue";
-import { onMounted, reactive, ref, watch } from "vue";
+import type { TablePaginationConfig } from "ant-design-vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { FormInstance } from "ant-design-vue";
 import { message } from "ant-design-vue";
@@ -118,6 +140,18 @@ import {
   type SkillRow,
 } from "../constants/skillTiers";
 
+const userRoleOptions = [
+  { value: "ADMIN", label: "管理员" },
+  { value: "MANAGER", label: "经理" },
+  { value: "MEMBER", label: "成员" },
+];
+
+function normalizeUserRole(r: string | undefined): string {
+  const u = (r ?? "").trim().toUpperCase();
+  if (u === "ADMIN" || u === "MANAGER" || u === "MEMBER") return u;
+  return "MEMBER";
+}
+
 type UserRow = {
   id: number;
   username: string;
@@ -125,6 +159,11 @@ type UserRow = {
   role: string;
   avgPerformance?: number;
   status?: number;
+};
+
+type UserPageResponse = {
+  items: UserRow[];
+  total: number;
 };
 
 type UserDetail = {
@@ -144,7 +183,20 @@ const role = ref(localStorage.getItem("role") || "");
 const currentUserId = ref(Number(localStorage.getItem("userId")) || 0);
 
 const users = ref<UserRow[]>([]);
+const keyword = ref("");
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const listLoading = ref(false);
 const open = ref(false);
+
+const tablePagination = computed(() => ({
+  current: currentPage.value,
+  pageSize: pageSize.value,
+  total: total.value,
+  showSizeChanger: true,
+  showTotal: (t: number) => `共 ${t} 条`,
+}));
 const formRef = ref<FormInstance>();
 const catalog = ref<SkillCatalogEntry[]>([]);
 const skillRows = ref<SkillRow[]>([]);
@@ -213,9 +265,40 @@ watch(editOpen, (v) => {
   if (v) loadCatalog();
 });
 
+function runSearch() {
+  currentPage.value = 1;
+  load().catch(() => {});
+}
+
+function onTableChange(pag: TablePaginationConfig) {
+  if (pag.current != null) {
+    currentPage.value = pag.current;
+  }
+  if (pag.pageSize != null) {
+    pageSize.value = pag.pageSize;
+  }
+  load().catch(() => {});
+}
+
 async function load() {
-  const { data } = await client.get<UserRow[]>("/admin/users");
-  users.value = data;
+  listLoading.value = true;
+  try {
+    const params: Record<string, string | number> = {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+    };
+    const q = keyword.value.trim();
+    if (q) {
+      params.keyword = q;
+    }
+    const { data } = await client.get<UserPageResponse>("/admin/users", { params });
+    users.value = data.items;
+    total.value = data.total;
+  } catch {
+    message.error("加载失败");
+  } finally {
+    listLoading.value = false;
+  }
 }
 
 onMounted(() => {
@@ -223,7 +306,7 @@ onMounted(() => {
     router.replace("/");
     return;
   }
-  load().catch(() => message.error("加载失败"));
+  load();
 });
 
 async function openEdit(record: UserRow) {
@@ -232,7 +315,7 @@ async function openEdit(record: UserRow) {
     editingId.value = data.id;
     editingUsername.value = data.username;
     editForm.displayName = data.displayName ?? "";
-    editForm.role = data.role;
+    editForm.role = normalizeUserRole(data.role);
     editForm.baseCapacity = data.baseCapacity != null ? Number(data.baseCapacity) : 40;
     editForm.avgPerformance = data.avgPerformance != null ? Number(data.avgPerformance) : 75;
     editForm.delayHistoryScore =

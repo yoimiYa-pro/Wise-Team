@@ -1,10 +1,11 @@
 package com.teampm.web;
 
-import com.teampm.domain.InAppMessage;
+import com.teampm.dto.MessagePageResponse;
 import com.teampm.security.SecurityUtils;
 import com.teampm.service.InAppMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,9 +25,12 @@ public class InAppMessageController {
     private final InAppMessageService inAppMessageService;
 
     @GetMapping
-    public List<InAppMessage> list(@RequestParam(defaultValue = "80") int limit) {
+    public MessagePageResponse list(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String keyword) {
         var p = SecurityUtils.requireUser();
-        return inAppMessageService.list(p.getId(), Math.min(Math.max(limit, 1), 200));
+        return inAppMessageService.pageList(p.getId(), keyword, page, pageSize);
     }
 
     @GetMapping("/unread-count")
@@ -48,5 +51,13 @@ public class InAppMessageController {
     @PostMapping("/read-all")
     public void readAll() {
         inAppMessageService.markAllRead(SecurityUtils.requireUser().getId());
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteOne(@PathVariable Long id) {
+        var p = SecurityUtils.requireUser();
+        if (!inAppMessageService.deleteOwned(id, p.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 }

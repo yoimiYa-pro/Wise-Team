@@ -7,7 +7,7 @@
           <div class="login-brand" aria-hidden="true">
             <span class="login-brand-mark">WT</span>
           </div>
-          <h1 class="login-title">团队任务管理与绩效评估</h1>
+          <h1 class="login-title">团队任务管理与绩效评估系统</h1>
           <p class="login-subtitle">登录以管理团队、任务与绩效数据</p>
         </header>
 
@@ -18,7 +18,11 @@
           hide-required-mark
           @finish="onFinish"
         >
-          <a-form-item label="用户名" name="username" :rules="[{ required: true, message: '请输入用户名' }]">
+          <a-form-item
+            label="用户名"
+            name="username"
+            :rules="[{ required: true, message: '请输入用户名' }]"
+          >
             <a-input
               v-model:value="form.username"
               size="large"
@@ -30,7 +34,11 @@
               </template>
             </a-input>
           </a-form-item>
-          <a-form-item label="密码" name="password" :rules="[{ required: true, message: '请输入密码' }]">
+          <a-form-item
+            label="密码"
+            name="password"
+            :rules="[{ required: true, message: '请输入密码' }]"
+          >
             <a-input-password
               v-model:value="form.password"
               size="large"
@@ -137,8 +145,16 @@ async function onFinish() {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 100% 70% at 0% 0%, rgba(237, 242, 250, 0.9), transparent 52%),
-    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(232, 239, 248, 0.85), transparent 48%),
+    radial-gradient(
+      ellipse 100% 70% at 0% 0%,
+      rgba(237, 242, 250, 0.9),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 100% 100%,
+      rgba(232, 239, 248, 0.85),
+      transparent 48%
+    ),
     linear-gradient(180deg, #f8fafd 0%, #f0f4f9 45%, #edf2fa 100%);
 }
 
@@ -147,7 +163,8 @@ async function onFinish() {
   position: absolute;
   inset: 0;
   opacity: 0.35;
-  background-image: linear-gradient(rgba(60, 64, 67, 0.04) 1px, transparent 1px),
+  background-image:
+    linear-gradient(rgba(60, 64, 67, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(60, 64, 67, 0.04) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent);

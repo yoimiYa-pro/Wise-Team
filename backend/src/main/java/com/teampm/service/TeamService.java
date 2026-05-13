@@ -128,6 +128,14 @@ public class TeamService {
         if (team.getManagerId() == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "需指定管理者");
         }
+        User managerUser = userMapper.findById(team.getManagerId());
+        if (managerUser == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "管理者用户不存在");
+        }
+        String mgrRole = managerUser.getRole();
+        if (!"MANAGER".equals(mgrRole) && !"ADMIN".equals(mgrRole)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "团队管理者须为管理员或管理者角色");
+        }
         team.setStatus("ACTIVE");
         if (membershipOfUser(team.getManagerId()) != null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "负责人已在其他团队中，请先退出原团队后再创建");

@@ -10,5 +10,5 @@ import java.util.List;
 public interface AuditLogMapper {
     int insert(AuditLog log);
 
-    List<AuditLog> findRecent(@Param("limit") int limit);
+    List<AuditLog> findRecent(@Param("keywords") List<String> keywords, @Param("limit") int limit);
 }

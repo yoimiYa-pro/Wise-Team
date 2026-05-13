@@ -1,6 +1,6 @@
 <template>
   <a-space direction="vertical" style="width: 100%" size="large">
-    <a-card v-if="showCycleManagement" :title="`团队 ${tid} — 绩效周期`">
+    <a-card v-if="showCycleManagement">
       <a-form layout="inline" :model="openForm" @finish="openCycle">
         <a-form-item label="类型" name="cycleType">
           <a-select v-model:value="openForm.cycleType" style="width: 120px">
@@ -15,7 +15,7 @@
       </a-form>
       <a-table
         style="margin-top: 16px"
-        :row-key="(r: CycleRow) => r.id"
+        :row-key="(r) => r.id"
         :data-source="cycles"
         :columns="cycleColumns"
         :pagination="false"
@@ -26,7 +26,7 @@
               v-if="!record.closedFlag"
               size="small"
               danger
-              @click="closeCycle(record.id)"
+              @click="openCloseModal(record.id)"
             >
               关闭并计算 FCE
             </a-button>
@@ -76,6 +76,49 @@
         <a-button type="primary" html-type="submit">提交互评</a-button>
       </a-form>
     </a-card>
+
+    <a-modal
+      v-model:open="closeModalOpen"
+      title="关账 — 上级四维评价"
+      width="720px"
+      :footer="null"
+      destroy-on-close
+      @cancel="onCloseModalCancel"
+    >
+      <a-alert
+        type="info"
+        show-icon
+        style="margin-bottom: 12px"
+        message="请为每位已通过审核的成员选择评价档次（对应 FCE 四档：优秀、良好、合格、不合格）。选「默认」则该成员管理者维为四档均衡（0.25×4），与此前未录入行为一致。"
+      />
+      <a-table
+        size="small"
+        row-key="userId"
+        :columns="closeModalColumns"
+        :data-source="closeModalMembers"
+        :pagination="false"
+        :loading="closeModalLoading"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'name'">
+            {{ formatMemberLabel(record) }}
+          </template>
+          <template v-else-if="column.key === 'grade'">
+            <a-select
+              v-model:value="managerGrades[record.userId]"
+              style="width: 100%"
+              :options="managerGradeOptions"
+            />
+          </template>
+        </template>
+      </a-table>
+      <a-space style="margin-top: 16px">
+        <a-button @click="onCloseModalCancel">取消</a-button>
+        <a-button type="primary" danger :loading="closeSubmitting" @click="submitCloseCycle">
+          确认关账并计算 FCE
+        </a-button>
+      </a-space>
+    </a-modal>
   </a-space>
 </template>
 
@@ -104,6 +147,37 @@ const showCycleManagement = computed(() => role.value === "MANAGER" || role.valu
 
 const cycles = ref<CycleRow[]>([]);
 const assignableUsers = ref<{ userId: number; username: string; displayName?: string }[]>([]);
+
+/** 关账弹窗：已批准成员 + 管理者选择的四档 one-hot（与后端 CloseCycleReq.managerRows 一致） */
+const closeModalOpen = ref(false);
+const closeModalLoading = ref(false);
+const closeSubmitting = ref(false);
+const closingCycleId = ref<number | null>(null);
+const closeModalMembers = ref<{ userId: number; username: string; displayName?: string | null }[]>([]);
+const managerGrades = reactive<Record<number, string>>({});
+
+const MANAGER_GRADE_KEYS = ["EXCELLENT", "GOOD", "PASS", "FAIL", "DEFAULT"] as const;
+type ManagerGradeKey = (typeof MANAGER_GRADE_KEYS)[number];
+
+const managerGradeOptions: { label: string; value: ManagerGradeKey }[] = [
+  { label: "优秀（隶属度 1,0,0,0）", value: "EXCELLENT" },
+  { label: "良好（0,1,0,0）", value: "GOOD" },
+  { label: "合格（0,0,1,0）", value: "PASS" },
+  { label: "不合格（0,0,0,1）", value: "FAIL" },
+  { label: "默认（0.25×4，不写入 managerRows）", value: "DEFAULT" },
+];
+
+const GRADE_TO_VECTOR: Record<Exclude<ManagerGradeKey, "DEFAULT">, [number, number, number, number]> = {
+  EXCELLENT: [1, 0, 0, 0],
+  GOOD: [0, 1, 0, 0],
+  PASS: [0, 0, 1, 0],
+  FAIL: [0, 0, 0, 1],
+};
+
+const closeModalColumns = [
+  { title: "成员", key: "name", width: 220 },
+  { title: "上级评价（四档）", key: "grade", width: 360 },
+];
 
 const myUserId = computed(() => Number(localStorage.getItem("userId")) || 0);
 
@@ -245,10 +319,67 @@ async function openCycle() {
   }
 }
 
-async function closeCycle(id: number) {
-  await client.post(`/performance/cycles/${id}/close`, {});
-  message.success("已关闭并生成报告");
-  load();
+function buildManagerRowsPayload(): Record<string, number[]> | undefined {
+  const out: Record<string, number[]> = {};
+  for (const u of closeModalMembers.value) {
+    const g = managerGrades[u.userId] as ManagerGradeKey | undefined;
+    if (g && g !== "DEFAULT") {
+      const vec = GRADE_TO_VECTOR[g as Exclude<ManagerGradeKey, "DEFAULT">];
+      if (vec) {
+        out[String(u.userId)] = [...vec];
+      }
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+async function openCloseModal(cycleId: number) {
+  closingCycleId.value = cycleId;
+  closeModalOpen.value = true;
+  closeModalLoading.value = true;
+  for (const k of Object.keys(managerGrades)) {
+    delete managerGrades[Number(k)];
+  }
+  try {
+    const { data } = await client.get<{ userId: number; username: string; displayName?: string | null }[]>(
+      `/teams/${tid.value}/assignable-users`,
+    );
+    closeModalMembers.value = data;
+    for (const u of data) {
+      managerGrades[u.userId] = "DEFAULT";
+    }
+  } catch {
+    closeModalMembers.value = [];
+    message.error("加载成员列表失败（需为团队管理者或系统管理员）");
+  } finally {
+    closeModalLoading.value = false;
+  }
+}
+
+function onCloseModalCancel() {
+  closeModalOpen.value = false;
+  closingCycleId.value = null;
+}
+
+async function submitCloseCycle() {
+  const id = closingCycleId.value;
+  if (id == null) return;
+  const managerRows = buildManagerRowsPayload();
+  closeSubmitting.value = true;
+  try {
+    await client.post(`/performance/cycles/${id}/close`, managerRows != null ? { managerRows } : {});
+    message.success("已关闭并生成报告");
+    closeModalOpen.value = false;
+    closingCycleId.value = null;
+    load();
+  } catch (e) {
+    const text = axios.isAxiosError(e)
+      ? String((e.response?.data as { error?: string })?.error ?? e.message)
+      : "关账失败";
+    message.error(text);
+  } finally {
+    closeSubmitting.value = false;
+  }
 }
 
 async function submitPeer() {

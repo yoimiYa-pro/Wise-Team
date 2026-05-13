@@ -15,9 +15,22 @@
 
     <select id="findById" resultMap="Map">SELECT * FROM in_app_messages WHERE id = #{id}</select>
 
-    <select id="findByUserId" resultMap="Map">
-        SELECT * FROM in_app_messages WHERE user_id = #{userId}
-        ORDER BY id DESC LIMIT #{limit}
+    <select id="findPage" resultMap="Map">
+        SELECT * FROM in_app_messages
+        WHERE user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR body LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM in_app_messages
+        WHERE user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR body LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -36,4 +49,8 @@
     <select id="countUnread" resultType="int">
         SELECT COUNT(*) FROM in_app_messages WHERE user_id = #{userId} AND read_flag = 0
     </select>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM in_app_messages WHERE id = #{id} AND user_id = #{userId}
+    </delete>
 </mapper>

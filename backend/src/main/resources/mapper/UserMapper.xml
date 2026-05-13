@@ -20,6 +20,26 @@
     <select id="findByUsername" resultMap="UserMap">SELECT * FROM users WHERE username = #{username}</select>
     <select id="findAll" resultMap="UserMap">SELECT * FROM users ORDER BY id</select>
 
+    <sql id="adminUserWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (username LIKE CONCAT('%', #{keyword}, '%') OR display_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="countForAdminList" resultType="long">
+        SELECT COUNT(*) FROM users
+        <include refid="adminUserWhere"/>
+    </select>
+
+    <select id="findPageForAdminList" resultMap="UserMap">
+        SELECT * FROM users
+        <include refid="adminUserWhere"/>
+        ORDER BY id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO users (username, password_hash, display_name, role, skills_json, base_capacity, avg_performance, delay_history_score, status)
         VALUES (#{username}, #{passwordHash}, #{displayName}, #{role}, #{skillsJson}, #{baseCapacity}, #{avgPerformance}, #{delayHistoryScore}, #{status})

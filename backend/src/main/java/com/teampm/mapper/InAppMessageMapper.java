@@ -11,7 +11,13 @@ public interface InAppMessageMapper {
 
     InAppMessage findById(@Param("id") Long id);
 
-    List<InAppMessage> findByUserId(@Param("userId") Long userId, @Param("limit") int limit);
+    List<InAppMessage> findPage(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+
+    long countPage(@Param("userId") Long userId, @Param("keyword") String keyword);
 
     int insert(InAppMessage row);
 
@@ -20,4 +26,6 @@ public interface InAppMessageMapper {
     int markAllRead(@Param("userId") Long userId);
 
     int countUnread(@Param("userId") Long userId);
+
+    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }

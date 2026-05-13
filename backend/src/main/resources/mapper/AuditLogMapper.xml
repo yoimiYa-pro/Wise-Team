@@ -17,6 +17,16 @@
     </insert>
 
     <select id="findRecent" resultMap="LogMap">
-        SELECT * FROM audit_logs ORDER BY id DESC LIMIT #{limit}
+        SELECT * FROM audit_logs
+        <where>
+            <if test="keywords != null and keywords.size() > 0">
+                <foreach collection="keywords" item="kw" separator=" OR " open="(" close=")">
+                    (action LIKE CONCAT('%', #{kw}, '%')
+                    OR resource_type LIKE CONCAT('%', #{kw}, '%')
+                    OR IFNULL(detail, '') LIKE CONCAT('%', #{kw}, '%'))
+                </foreach>
+            </if>
+        </where>
+        ORDER BY id DESC LIMIT #{limit}
     </select>
 </mapper>

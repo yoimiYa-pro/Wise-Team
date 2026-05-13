@@ -1,6 +1,7 @@
 package com.teampm.service;
 
 import com.teampm.domain.User;
+import com.teampm.dto.UserPageResponse;
 import com.teampm.exception.ApiException;
 import com.teampm.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,24 @@ public class UserAdminService {
 
     public List<User> listAll() {
         return userMapper.findAll();
+    }
+
+    public UserPageResponse listPage(String keyword, int page, int pageSize) {
+        if (page < 1) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "page 至少为 1");
+        }
+        if (pageSize < 1 || pageSize > 100) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "pageSize 须在 1–100 之间");
+        }
+        String kw = keyword == null ? null : keyword.trim();
+        if (kw != null && kw.isEmpty()) {
+            kw = null;
+        }
+        long total = userMapper.countForAdminList(kw);
+        int offset = (page - 1) * pageSize;
+        List<User> items = userMapper.findPageForAdminList(kw, offset, pageSize);
+        items.forEach(u -> u.setPasswordHash(null));
+        return new UserPageResponse(items, total);
     }
 
     public User get(Long id) {

@@ -1,6 +1,5 @@
 <template>
   <a-space direction="vertical" style="width: 100%" size="large">
-    <a-typography-title :level="4" style="margin: 0">我的绩效</a-typography-title>
     <a-typography-text type="secondary">
       绩效均分为系统在周期关闭时根据管理者评价、任务达成与同事互评（FCE）综合更新；下方曲线与表格为各周期生成的报告得分。
     </a-typography-text>
